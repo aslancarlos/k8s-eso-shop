@@ -1,9 +1,9 @@
-<%- include('partials/head', { title: 'Products' }) %>
+<%- include('partials/head', { title: t('products.title') }) %>
 
 <div class="page-header">
-  <h1 class="page-title">Products</h1>
+  <h1 class="page-title"><%= t('products.title') %></h1>
   <div class="category-filters">
-    <a href="products" class="filter-btn <%= !activeCategory ? 'filter-btn--active' : '' %>">All</a>
+    <a href="products" class="filter-btn <%= !activeCategory ? 'filter-btn--active' : '' %>"><%= t('products.all') %></a>
     <% categories.forEach(cat => { %>
       <a href="products?category=<%= cat %>"
          class="filter-btn <%= activeCategory === cat ? 'filter-btn--active' : '' %>">
@@ -14,7 +14,7 @@
 </div>
 
 <% if (error) { %>
-  <div class="alert alert--error"><strong>DB Error:</strong> <%= error %></div>
+  <div class="alert alert--error"><strong><%= t('common.db_error') %></strong> <%= error %></div>
 <% } %>
 
 <div class="product-grid product-grid--full">
@@ -29,7 +29,7 @@
         <p class="product-desc"><%= p.description %></p>
         <div class="product-footer">
           <span class="product-price">$<%= parseFloat(p.price).toFixed(2) %></span>
-          <span class="product-stock"><%= p.stock %> in stock</span>
+          <span class="product-stock"><%= p.stock %> <%= t('products.in_stock') %></span>
         </div>
       </div>
     </div>

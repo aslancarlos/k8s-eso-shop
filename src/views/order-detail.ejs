@@ -1,7 +1,7 @@
 <%- include('partials/head', { title: order ? 'Order #' + order.id : 'Order' }) %>
 
 <div class="page-header">
-  <a href="orders" class="back-link">← Orders</a>
+  <a href="orders" class="back-link"><%= t('order_detail.back') %></a>
   <% if (order) { %>
     <h1 class="page-title">Order #<%= order.id %></h1>
   <% } %>
@@ -14,18 +14,23 @@
 <% if (order) { %>
   <div class="order-detail-grid">
     <div class="order-meta card">
-      <h2 class="card-title">Customer</h2>
+      <h2 class="card-title"><%= t('order_detail.customer') %></h2>
       <p><strong><%= order.customer_name %></strong></p>
       <p class="text-muted"><%= order.customer_email %></p>
-      <p class="mt-1">Status: <span class="status-badge status-badge--<%= order.status %>"><%= order.status %></span></p>
+      <p class="mt-1"><%= t('order_detail.status') %>: <span class="status-badge status-badge--<%= order.status %>"><%= order.status %></span></p>
       <p class="text-muted mt-1"><%= new Date(order.created_at).toLocaleString() %></p>
     </div>
 
     <div class="order-items card">
-      <h2 class="card-title">Items</h2>
+      <h2 class="card-title"><%= t('order_detail.items') %></h2>
       <table class="items-table">
         <thead>
-          <tr><th>Product</th><th>Qty</th><th>Unit Price</th><th>Subtotal</th></tr>
+          <tr>
+            <th><%= t('order_detail.col_product') %></th>
+            <th><%= t('order_detail.col_qty') %></th>
+            <th><%= t('order_detail.col_unit') %></th>
+            <th><%= t('order_detail.col_subtotal') %></th>
+          </tr>
         </thead>
         <tbody>
           <% items.forEach(item => { %>
@@ -47,7 +52,7 @@
         </tbody>
         <tfoot>
           <tr>
-            <td colspan="3" class="text-right"><strong>Total</strong></td>
+            <td colspan="3" class="text-right"><strong><%= t('order_detail.total') %></strong></td>
             <td><strong>$<%= parseFloat(order.total).toFixed(2) %></strong></td>
           </tr>
         </tfoot>

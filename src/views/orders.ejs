@@ -1,27 +1,27 @@
-<%- include('partials/head', { title: 'Orders' }) %>
+<%- include('partials/head', { title: t('orders.title') }) %>
 
 <div class="page-header">
-  <h1 class="page-title">Orders</h1>
+  <h1 class="page-title"><%= t('orders.title') %></h1>
 </div>
 
 <% if (error) { %>
-  <div class="alert alert--error"><strong>DB Error:</strong> <%= error %></div>
+  <div class="alert alert--error"><strong><%= t('common.db_error') %></strong> <%= error %></div>
 <% } %>
 
 <% if (orders.length === 0 && !error) { %>
-  <div class="empty-state">No orders yet.</div>
+  <div class="empty-state"><%= t('orders.empty') %></div>
 <% } else { %>
   <div class="orders-table-wrap">
     <table class="orders-table">
       <thead>
         <tr>
           <th>#</th>
-          <th>Customer</th>
-          <th>Email</th>
-          <th>Items</th>
-          <th>Total</th>
-          <th>Status</th>
-          <th>Date</th>
+          <th><%= t('orders.col_customer') %></th>
+          <th><%= t('orders.col_email') %></th>
+          <th><%= t('orders.col_items') %></th>
+          <th><%= t('orders.col_total') %></th>
+          <th><%= t('orders.col_status') %></th>
+          <th><%= t('orders.col_date') %></th>
           <th></th>
         </tr>
       </thead>
@@ -35,7 +35,7 @@
             <td class="order-total">$<%= parseFloat(o.total).toFixed(2) %></td>
             <td><span class="status-badge status-badge--<%= o.status %>"><%= o.status %></span></td>
             <td class="text-muted"><%= new Date(o.created_at).toLocaleDateString() %></td>
-            <td><a href="orders/<%= o.id %>" class="link">View →</a></td>
+            <td><a href="orders/<%= o.id %>" class="link"><%= t('orders.view') %></a></td>
           </tr>
         <% }) %>
       </tbody>

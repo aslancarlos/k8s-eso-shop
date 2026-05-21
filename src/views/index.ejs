@@ -1,37 +1,33 @@
-<%- include('partials/head', { title: 'Home' }) %>
+<%- include('partials/head', { title: t('home.featured') }) %>
 
 <section class="hero">
   <div class="hero-text">
-    <div class="hero-eyebrow">PANW|IDIRA Conjur · External Secrets Operator · Kubernetes</div>
-    <h1 class="hero-title">Zero-Trust <span class="accent">Ecommerce</span></h1>
-    <p class="hero-subtitle">
-      A live demo where every database credential is fetched dynamically from
-      <strong>Conjur Cloud</strong> via the <strong>External Secrets Operator</strong> —
-      no hardcoded passwords, no .env file, no secret baked in the image.
-    </p>
+    <div class="hero-eyebrow"><%= t('home.eyebrow') %></div>
+    <h1 class="hero-title"><%= t('home.title') %> <span class="accent"><%= t('home.title_accent') %></span></h1>
+    <p class="hero-subtitle"><%- t('home.subtitle') %></p>
     <div class="hero-actions">
-      <a href="products" class="btn btn--primary">Browse Products</a>
-      <a href="secrets-info" class="btn btn--outline">How it works →</a>
+      <a href="products" class="btn btn--primary"><%= t('home.cta_browse') %></a>
+      <a href="secrets-info" class="btn btn--outline"><%= t('home.cta_how') %></a>
     </div>
   </div>
   <div class="hero-diagram">
-    <div class="diag-node diag-node--app">App Pod</div>
-    <div class="diag-arrow">↓ reads env vars</div>
-    <div class="diag-node diag-node--k8s">K8s Secret</div>
-    <div class="diag-arrow">↑ synced by</div>
-    <div class="diag-node diag-node--eso">ESO Controller</div>
-    <div class="diag-arrow">↓ JWT authn</div>
-    <div class="diag-node diag-node--conjur">Conjur Cloud</div>
+    <div class="diag-node diag-node--app"><%= t('home.diag_app') %></div>
+    <div class="diag-arrow"><%= t('home.diag_reads') %></div>
+    <div class="diag-node diag-node--k8s"><%= t('home.diag_k8s') %></div>
+    <div class="diag-arrow"><%= t('home.diag_synced') %></div>
+    <div class="diag-node diag-node--eso"><%= t('home.diag_eso') %></div>
+    <div class="diag-arrow"><%= t('home.diag_jwt') %></div>
+    <div class="diag-node diag-node--conjur"><%= t('home.diag_conjur') %></div>
   </div>
 </section>
 
 <section class="section">
   <div class="section-header">
-    <h2 class="section-title">Featured Products</h2>
-    <a href="products" class="section-link">View all →</a>
+    <h2 class="section-title"><%= t('home.featured') %></h2>
+    <a href="products" class="section-link"><%= t('home.view_all') %></a>
   </div>
   <% if (error) { %>
-    <div class="alert alert--error"><strong>DB Error:</strong> <%= error %></div>
+    <div class="alert alert--error"><strong><%= t('common.db_error') %></strong> <%= error %></div>
   <% } %>
   <div class="product-grid">
     <% products.slice(0, 8).forEach(p => { %>
@@ -45,7 +41,7 @@
           <p class="product-desc"><%= p.description %></p>
           <div class="product-footer">
             <span class="product-price">$<%= parseFloat(p.price).toFixed(2) %></span>
-            <span class="product-stock"><%= p.stock %> in stock</span>
+            <span class="product-stock"><%= p.stock %> <%= t('products.in_stock') %></span>
           </div>
         </div>
       </div>

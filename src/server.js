@@ -1,7 +1,9 @@
 const express = require('express')
 const path = require('path')
 const http = require('http')
+const cookieParser = require('cookie-parser')
 const { getPool } = require('./db')
+const i18n = require('./i18n')
 
 const app = express()
 const PORT         = process.env.PORT || 3000
@@ -17,6 +19,8 @@ const router = express.Router()
 router.use(express.static(path.join(__dirname, '..', 'public')))
 router.use(express.json())
 router.use(express.urlencoded({ extended: true }))
+router.use(cookieParser())
+router.use(i18n.middleware)
 
 router.get('/health', (req, res) => {
   res.json({
