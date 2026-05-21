@@ -1,0 +1,39 @@
+<%- include('partials/head', { title: 'Products' }) %>
+
+<div class="page-header">
+  <h1 class="page-title">Products</h1>
+  <div class="category-filters">
+    <a href="products" class="filter-btn <%= !activeCategory ? 'filter-btn--active' : '' %>">All</a>
+    <% categories.forEach(cat => { %>
+      <a href="products?category=<%= cat %>"
+         class="filter-btn <%= activeCategory === cat ? 'filter-btn--active' : '' %>">
+        <%= cat %>
+      </a>
+    <% }) %>
+  </div>
+</div>
+
+<% if (error) { %>
+  <div class="alert alert--error"><strong>DB Error:</strong> <%= error %></div>
+<% } %>
+
+<div class="product-grid product-grid--full">
+  <% products.forEach(p => { %>
+    <div class="product-card">
+      <div class="product-img-wrap">
+        <img src="<%= p.image_url %>" alt="<%= p.name %>" class="product-img" loading="lazy" />
+        <span class="product-badge"><%= p.category %></span>
+      </div>
+      <div class="product-info">
+        <h3 class="product-name"><%= p.name %></h3>
+        <p class="product-desc"><%= p.description %></p>
+        <div class="product-footer">
+          <span class="product-price">$<%= parseFloat(p.price).toFixed(2) %></span>
+          <span class="product-stock"><%= p.stock %> in stock</span>
+        </div>
+      </div>
+    </div>
+  <% }) %>
+</div>
+
+<%- include('partials/foot') %>

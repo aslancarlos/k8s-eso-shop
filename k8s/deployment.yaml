@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eso-shop
+  namespace: eso-shop
+  labels:
+    app: eso-shop
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: eso-shop
+  template:
+    metadata:
+      labels:
+        app: eso-shop
+    spec:
+      serviceAccountName: eso-shop-sa
+      imagePullSecrets:
+        - name: dockerhub-pull
+      containers:
+        - name: eso-shop
+          image: aslancarlos/k8s-eso-shop:latest
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - secretRef:
+                name: eso-shop-db-creds
+          env:
+            - name: DB_NAME
+              value: "userdb"
+            - name: PORT
+              value: "3000"
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: SECRET_NAME
+              value: "eso-shop-db-creds"
+            - name: BASE_PATH
+              value: "/k8s-eso"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "250m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: eso-shop
+  namespace: eso-shop
+spec:
+  selector:
+    app: eso-shop
+  ports:
+    - port: 80
+      targetPort: 3000

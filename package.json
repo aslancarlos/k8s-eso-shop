@@ -1,0 +1,15 @@
+{
+  "name": "k8s-eso-shop",
+  "version": "1.0.0",
+  "description": "Ecommerce demo using External Secrets Operator + CyberArk Conjur",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mysql2": "^3.6.5",
+    "ejs": "^3.1.9"
+  }
+}

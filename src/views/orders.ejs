@@ -1,0 +1,46 @@
+<%- include('partials/head', { title: 'Orders' }) %>
+
+<div class="page-header">
+  <h1 class="page-title">Orders</h1>
+</div>
+
+<% if (error) { %>
+  <div class="alert alert--error"><strong>DB Error:</strong> <%= error %></div>
+<% } %>
+
+<% if (orders.length === 0 && !error) { %>
+  <div class="empty-state">No orders yet.</div>
+<% } else { %>
+  <div class="orders-table-wrap">
+    <table class="orders-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Customer</th>
+          <th>Email</th>
+          <th>Items</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Date</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% orders.forEach(o => { %>
+          <tr>
+            <td class="order-id">#<%= o.id %></td>
+            <td><%= o.customer_name %></td>
+            <td class="text-muted"><%= o.customer_email %></td>
+            <td class="text-center"><%= o.item_count %></td>
+            <td class="order-total">$<%= parseFloat(o.total).toFixed(2) %></td>
+            <td><span class="status-badge status-badge--<%= o.status %>"><%= o.status %></span></td>
+            <td class="text-muted"><%= new Date(o.created_at).toLocaleDateString() %></td>
+            <td><a href="orders/<%= o.id %>" class="link">View →</a></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+
+<%- include('partials/foot') %>
