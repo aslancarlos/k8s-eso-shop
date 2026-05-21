@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: eso-shop-operator
+  namespace: eso-shop
+  labels:
+    app: eso-shop-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: eso-shop-operator
+  template:
+    metadata:
+      labels:
+        app: eso-shop-operator
+    spec:
+      serviceAccountName: eso-shop-operator
+      imagePullSecrets:
+        - name: dockerhub-pull
+      containers:
+        - name: operator
+          image: aslancarlos/eso-shop-operator:latest
+          env:
+            - name: WATCH_NAMESPACE
+              value: "eso-shop"
+            - name: WATCH_SECRET
+              value: "eso-shop-db-creds"
+            - name: TARGET_DEPLOYMENT
+              value: "eso-shop"
+            - name: HEALTH_PORT
+              value: "8080"
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            failureThreshold: 3
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
