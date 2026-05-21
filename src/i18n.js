@@ -34,7 +34,13 @@ function make_t(dict) {
 function middleware(req, res, next) {
   const lang = detect(req)
   if (req.query.lang && SUPPORTED.includes(req.query.lang)) {
-    res.cookie('eso_lang', lang, { maxAge: 365 * 24 * 3600 * 1000, httpOnly: true })
+    const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https'
+    res.cookie('eso_lang', lang, {
+      maxAge: 365 * 24 * 3600 * 1000,
+      httpOnly: true,
+      secure: isSecure,
+      sameSite: 'lax',
+    })
   }
   res.locals.lang = lang
   res.locals.t = make_t(translations[lang] || translations[DEFAULT])
