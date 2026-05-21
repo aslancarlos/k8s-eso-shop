@@ -149,7 +149,7 @@ router.get('/secrets-info', async (req, res) => {
       dbHost: process.env.DB_HOST || 'not set',
       dbUser: process.env.DB_USER || 'not set',
       dbPass: '••••••••',
-      dbName: process.env.DB_NAME || 'userdb',
+      dbName: process.env.DB_NAME || 'myappDB',
       secretName: process.env.SECRET_NAME || 'eso-shop-db-creds',
       esoNamespace: process.env.POD_NAMESPACE || 'eso-shop',
       error: err.message,
