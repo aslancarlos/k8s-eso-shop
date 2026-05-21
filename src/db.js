@@ -9,7 +9,7 @@ async function getPool() {
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASS,
-    database: process.env.DB_NAME || 'userdb',
+    database: process.env.DB_NAME || 'myappDB',
     waitForConnections: true,
     connectionLimit: 10,
     connectTimeout: 10000,

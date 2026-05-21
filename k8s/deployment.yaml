@@ -28,7 +28,7 @@ spec:
                 name: eso-shop-db-creds
           env:
             - name: DB_NAME
-              value: "userdb"
+              value: "myappDB"
             - name: PORT
               value: "3000"
             - name: POD_NAMESPACE
