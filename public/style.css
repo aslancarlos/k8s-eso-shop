@@ -412,3 +412,190 @@ code {
   border-radius: 4px;
 }
 pre code { background: none; padding: 0; }
+
+/* ── DASHBOARD ───────────────────────────── */
+.dash-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.75rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.dash-overall {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .5rem 1.1rem;
+  border-radius: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  font-weight: 600;
+  font-size: .9rem;
+}
+.overall-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+.overall-dot--ok   { background: var(--accent-green); box-shadow: 0 0 6px var(--accent-green); }
+.overall-dot--warn { background: var(--accent-gold);  box-shadow: 0 0 6px var(--accent-gold); animation: pulse 1.5s infinite; }
+
+/* Metric row */
+.metric-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+@media (max-width: 900px) { .metric-row { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 500px) { .metric-row { grid-template-columns: 1fr; } }
+
+.metric-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+}
+.metric-label {
+  font-size: .75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text-muted);
+  margin-bottom: .4rem;
+}
+.metric-value {
+  font-size: 2.4rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text);
+  margin-bottom: .25rem;
+}
+.metric-value--sm  { font-size: 1.5rem; font-family: var(--mono); }
+.metric-value--ok  { color: var(--accent-green); }
+.metric-value--err { color: var(--accent-red); }
+.metric-sub { font-size: .75rem; color: var(--text-muted); font-family: var(--mono); }
+
+/* Pod grid */
+.section-badge {
+  font-size: .75rem;
+  font-weight: 700;
+  background: rgba(88,166,255,.12);
+  color: var(--accent);
+  border: 1px solid rgba(88,166,255,.25);
+  padding: .2rem .65rem;
+  border-radius: 12px;
+}
+.section-hint { font-size: .78rem; color: var(--text-muted); }
+
+.pod-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+.pod-skeleton {
+  height: 110px;
+  background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-card-2) 50%, var(--bg-card) 75%);
+  background-size: 200% 100%;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+.pod-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  transition: transform .15s;
+  position: relative;
+  overflow: hidden;
+}
+.pod-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+}
+.pod-card:hover { transform: translateY(-2px); }
+
+.pod--running  { border-color: rgba(63,185,80,.3); }
+.pod--running::before  { background: var(--accent-green); }
+.pod--pending  { border-color: rgba(210,153,34,.3); }
+.pod--pending::before  { background: var(--accent-gold); }
+.pod--terminating { border-color: rgba(139,148,158,.3); opacity: .6; }
+.pod--terminating::before { background: var(--text-muted); }
+.pod--error    { border-color: rgba(248,81,73,.3); }
+.pod--error::before    { background: var(--accent-red); }
+
+.pod-status-dot {
+  flex-shrink: 0;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  margin-top: 3px;
+}
+.pod--running  .pod-status-dot { background: var(--accent-green); box-shadow: 0 0 5px var(--accent-green); animation: pulse 2s infinite; }
+.pod--pending  .pod-status-dot { background: var(--accent-gold); animation: pulse 1.2s infinite; }
+.pod--terminating .pod-status-dot { background: var(--text-muted); }
+.pod--error    .pod-status-dot { background: var(--accent-red); }
+
+.pod-info { flex: 1; min-width: 0; }
+.pod-name { font-size: .95rem; font-weight: 700; font-family: var(--mono); }
+.pod-full-name { font-size: .72rem; color: var(--text-muted); font-family: var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: .4rem; }
+.pod-meta { display: flex; gap: .6rem; align-items: center; margin-bottom: .3rem; flex-wrap: wrap; }
+.pod-phase { font-size: .75rem; font-weight: 600; color: var(--text-muted); }
+.pod-age   { font-size: .75rem; color: var(--text-muted); }
+.pod-restarts { font-size: .72rem; color: var(--accent-gold); font-weight: 600; }
+.pod-node  { font-size: .7rem; color: var(--text-muted); font-family: var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Events */
+.events-list { display: flex; flex-direction: column; gap: .6rem; }
+.event-empty { color: var(--text-muted); font-size: .88rem; padding: 1rem 0; }
+.event-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: .85rem 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  position: relative;
+}
+.event-row--latest { border-color: rgba(88,166,255,.3); }
+.event-icon {
+  font-size: 1.1rem;
+  color: var(--accent);
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+.event-body { flex: 1; }
+.event-title { font-size: .9rem; font-weight: 600; margin-bottom: .25rem; }
+.event-meta  { display: flex; gap: 1rem; font-size: .78rem; color: var(--text-muted); font-family: var(--mono); flex-wrap: wrap; }
+.event-new {
+  position: absolute;
+  top: .5rem; right: .75rem;
+  font-size: .65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: rgba(88,166,255,.15);
+  color: var(--accent);
+  padding: .1rem .45rem;
+  border-radius: 4px;
+  border: 1px solid rgba(88,166,255,.3);
+}
+
+/* Nav dashboard dot */
+.nav-link--dashboard { display: flex; align-items: center; gap: .4rem; }
+.dash-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: background .3s;
+}
+.dash-dot--ok   { background: var(--accent-green); }
+.dash-dot--warn { background: var(--accent-gold); animation: pulse 1.5s infinite; }

@@ -6,7 +6,7 @@ metadata:
   labels:
     app: eso-shop
 spec:
-  replicas: 1
+  replicas: 3
   # maxUnavailable: 0 garante que o pod antigo só termina depois do novo estar Ready
   strategy:
     type: RollingUpdate
