@@ -1,10 +1,12 @@
 const express = require('express')
 const path = require('path')
+const http = require('http')
 const { getPool } = require('./db')
 
 const app = express()
-const PORT = process.env.PORT || 3000
-const BASE = (process.env.BASE_PATH || '').replace(/\/$/, '')
+const PORT         = process.env.PORT || 3000
+const BASE         = (process.env.BASE_PATH || '').replace(/\/$/, '')
+const OPERATOR_URL = process.env.OPERATOR_URL || 'http://eso-shop-operator:8080'
 
 app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, 'views'))
@@ -155,6 +157,31 @@ router.get('/secrets-info', async (req, res) => {
       error: err.message,
     })
   }
+})
+
+// Proxy do status do operador para evitar CORS no browser
+function fetchOperatorStatus() {
+  return new Promise((resolve, reject) => {
+    const url = new URL('/status', OPERATOR_URL)
+    http.get(url.toString(), (res) => {
+      let d = ''
+      res.on('data', c => d += c)
+      res.on('end', () => {
+        try { resolve(JSON.parse(d)) }
+        catch { reject(new Error('Invalid operator response')) }
+      })
+    }).on('error', reject)
+  })
+}
+
+router.get('/dashboard', (req, res) => res.render('dashboard'))
+
+router.get('/api/dashboard', async (req, res) => {
+  const [opStatus, dbOk] = await Promise.all([
+    fetchOperatorStatus().catch(e => ({ error: e.message })),
+    getPool().then(p => p.execute('SELECT 1')).then(() => true).catch(() => false),
+  ])
+  res.json({ ...opStatus, dbConnected: dbOk })
 })
 
 app.use(BASE || '/', router)
