@@ -599,3 +599,22 @@ pre code { background: none; padding: 0; }
 }
 .dash-dot--ok   { background: var(--accent-green); }
 .dash-dot--warn { background: var(--accent-gold); animation: pulse 1.5s infinite; }
+
+/* Language switcher */
+.lang-switcher {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+  margin-left: .5rem;
+}
+.lang-btn {
+  padding: .2rem .45rem;
+  border-radius: 4px;
+  font-size: .75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color .15s, background .15s;
+}
+.lang-btn:hover { color: var(--text); background: var(--surface-2, rgba(255,255,255,.07)); }
+.lang-btn--active { color: var(--accent-green); background: rgba(0,200,120,.12); }

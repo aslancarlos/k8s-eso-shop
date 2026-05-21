@@ -1,0 +1,93 @@
+{
+  "nav": {
+    "products": "Products",
+    "orders": "Orders",
+    "secrets_info": "Secrets Info",
+    "dashboard": "Dashboard"
+  },
+  "home": {
+    "eyebrow": "PANW|IDIRA Conjur · External Secrets Operator · Kubernetes",
+    "title": "Zero-Trust",
+    "title_accent": "Ecommerce",
+    "subtitle": "A live demo where every database credential is fetched dynamically from <strong>Conjur Cloud</strong> via the <strong>External Secrets Operator</strong> — no hardcoded passwords, no .env file, no secret baked in the image.",
+    "cta_browse": "Browse Products",
+    "cta_how": "How it works →",
+    "featured": "Featured Products",
+    "view_all": "View all →",
+    "diag_app": "App Pod",
+    "diag_reads": "↓ reads env vars",
+    "diag_k8s": "K8s Secret",
+    "diag_synced": "↑ synced by",
+    "diag_eso": "ESO Controller",
+    "diag_jwt": "↓ JWT authn",
+    "diag_conjur": "Conjur Cloud"
+  },
+  "products": {
+    "title": "Products",
+    "all": "All",
+    "in_stock": "in stock"
+  },
+  "orders": {
+    "title": "Orders",
+    "empty": "No orders yet.",
+    "col_customer": "Customer",
+    "col_email": "Email",
+    "col_items": "Items",
+    "col_total": "Total",
+    "col_status": "Status",
+    "col_date": "Date",
+    "view": "View →"
+  },
+  "order_detail": {
+    "back": "← Orders",
+    "customer": "Customer",
+    "items": "Items",
+    "col_product": "Product",
+    "col_qty": "Qty",
+    "col_unit": "Unit Price",
+    "col_subtotal": "Subtotal",
+    "total": "Total",
+    "status": "Status"
+  },
+  "secrets_info": {
+    "title": "How Secrets Flow",
+    "subtitle": "Zero credentials in code — delivered by ESO → Conjur at runtime",
+    "chain_title": "Secret delivery chain",
+    "step1": "<strong>ClusterSecretStore</strong> — ESO authenticates with Conjur Cloud via <code>authn-jwt/eks-latam</code> using the pod's Kubernetes service account JWT",
+    "step2": "<strong>ExternalSecret</strong> maps Conjur paths to a K8s Secret:",
+    "step3": "<strong>K8s Secret</strong> <code>eso-shop-db-creds</code> is created/refreshed by ESO",
+    "step4": "<strong>Deployment</strong> mounts the secret as environment variables via <code>envFrom.secretRef</code>",
+    "step5": "<strong>App</strong> reads <code>DB_HOST</code>, <code>DB_USER</code>, <code>DB_PASS</code> from env — no Conjur SDK, no file reads",
+    "live_status": "Live connection status",
+    "connected": "Connected",
+    "error_pill": "Error",
+    "db_label": "Database",
+    "db_time": "DB time"
+  },
+  "dashboard": {
+    "title": "Live Dashboard",
+    "subtitle": "Auto-refresh every 5s",
+    "pods_running": "Pods Running",
+    "db_connection": "DB Connection",
+    "secret_revision": "Secret Revision",
+    "operator": "Operator",
+    "pods_section": "Pods",
+    "restart_history": "Restart History",
+    "restart_hint": "triggered by operator on secret update",
+    "no_restarts": "No restarts recorded in this operator session.",
+    "no_pods": "No pods found.",
+    "loading": "Loading…",
+    "all_ok": "All OK",
+    "attention": "Attention",
+    "rolling_restart": "Rolling restart triggered",
+    "new_badge": "new",
+    "desired": "of {{n}} desired",
+    "error_prefix": "Error: ",
+    "secret_name": "eso-shop-db-creds"
+  },
+  "common": {
+    "db_error": "DB Error:",
+    "footer_creds": "Credentials via",
+    "footer_via": "→"
+  }
+}

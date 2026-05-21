@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<%= locals.lang || 'pt' %>">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -15,14 +15,22 @@
         <span class="brand-text">ESO<span class="brand-accent">Shop</span></span>
       </a>
       <div class="nav-links">
-        <a href="products" class="nav-link">Products</a>
-        <a href="orders" class="nav-link">Orders</a>
+        <a href="products" class="nav-link"><%= t('nav.products') %></a>
+        <a href="orders" class="nav-link"><%= t('nav.orders') %></a>
         <a href="secrets-info" class="nav-link nav-link--secrets">
-          <span class="secrets-dot"></span>Secrets Info
+          <span class="secrets-dot"></span><%= t('nav.secrets_info') %>
         </a>
         <a href="dashboard" class="nav-link nav-link--dashboard">
-          <span class="dash-dot" id="nav-health-dot"></span>Dashboard
+          <span class="dash-dot" id="nav-health-dot"></span><%= t('nav.dashboard') %>
         </a>
+        <div class="lang-switcher">
+          <% ['pt','en','es'].forEach(function(l) { %>
+            <a href="?lang=<%= l %>"
+               class="lang-btn<%= (locals.lang === l) ? ' lang-btn--active' : '' %>">
+              <%= l.toUpperCase() %>
+            </a>
+          <% }) %>
+        </div>
       </div>
     </div>
   </nav>

@@ -1,44 +1,42 @@
-<%- include('partials/head', { title: 'Dashboard' }) %>
+<%- include('partials/head', { title: t('dashboard.title') }) %>
 
 <div class="dash-header">
   <div>
-    <h1 class="page-title">Live Dashboard</h1>
-    <p class="page-subtitle">Auto-refresh a cada 5s · <span id="last-update">—</span></p>
+    <h1 class="page-title"><%= t('dashboard.title') %></h1>
+    <p class="page-subtitle"><%= t('dashboard.subtitle') %> · <span id="last-update">—</span></p>
   </div>
   <div class="dash-overall" id="overall-badge">
     <span class="overall-dot" id="overall-dot"></span>
-    <span id="overall-text">Carregando…</span>
+    <span id="overall-text"><%= t('dashboard.loading') %></span>
   </div>
 </div>
 
-<!-- Métricas de topo -->
 <div class="metric-row" id="metric-row">
   <div class="metric-card">
-    <div class="metric-label">Pods Running</div>
+    <div class="metric-label"><%= t('dashboard.pods_running') %></div>
     <div class="metric-value" id="m-ready">—</div>
-    <div class="metric-sub" id="m-desired">de — desejados</div>
+    <div class="metric-sub" id="m-desired"><%= t('dashboard.loading') %></div>
   </div>
   <div class="metric-card">
-    <div class="metric-label">DB Connection</div>
+    <div class="metric-label"><%= t('dashboard.db_connection') %></div>
     <div class="metric-value" id="m-db">—</div>
     <div class="metric-sub">myappDB · mysql.demo.local</div>
   </div>
   <div class="metric-card">
-    <div class="metric-label">Secret Revision</div>
+    <div class="metric-label"><%= t('dashboard.secret_revision') %></div>
     <div class="metric-value metric-value--sm" id="m-rv">—</div>
-    <div class="metric-sub" id="m-secret">eso-shop-db-creds</div>
+    <div class="metric-sub" id="m-secret"><%= t('dashboard.secret_name') %></div>
   </div>
   <div class="metric-card">
-    <div class="metric-label">Operator</div>
+    <div class="metric-label"><%= t('dashboard.operator') %></div>
     <div class="metric-value" id="m-op">—</div>
     <div class="metric-sub">eso-shop-operator</div>
   </div>
 </div>
 
-<!-- Pod grid -->
 <div class="section">
   <div class="section-header">
-    <h2 class="section-title">Pods</h2>
+    <h2 class="section-title"><%= t('dashboard.pods_section') %></h2>
     <span class="section-badge" id="pod-count-badge">—</span>
   </div>
   <div class="pod-grid" id="pod-grid">
@@ -48,19 +46,31 @@
   </div>
 </div>
 
-<!-- Evento de rotação -->
 <div class="section">
   <div class="section-header">
-    <h2 class="section-title">Histórico de Restarts</h2>
-    <span class="section-hint">disparados pelo operador ao detectar atualização do secret</span>
+    <h2 class="section-title"><%= t('dashboard.restart_history') %></h2>
+    <span class="section-hint"><%= t('dashboard.restart_hint') %></span>
   </div>
   <div id="events-list" class="events-list">
-    <div class="event-empty">Nenhum restart registrado nesta sessão do operador.</div>
+    <div class="event-empty"><%= t('dashboard.no_restarts') %></div>
   </div>
 </div>
 
 <script>
 const BASE = '<%= locals.base || "" %>'
+const I18N = {
+  loading:        '<%= t("dashboard.loading") %>',
+  allOk:          '<%= t("dashboard.all_ok") %>',
+  attention:      '<%= t("dashboard.attention") %>',
+  desired:        '<%= t("dashboard.desired") %>',
+  noPods:         '<%= t("dashboard.no_pods") %>',
+  noRestarts:     '<%= t("dashboard.no_restarts") %>',
+  rollingRestart: '<%= t("dashboard.rolling_restart") %>',
+  newBadge:       '<%= t("dashboard.new_badge") %>',
+  errorPrefix:    '<%= t("dashboard.error_prefix") %>',
+  podBadge:       'pod',
+  podBadgePlural: 'pods',
+}
 
 function fmt(sec) {
   if (sec === null || sec === undefined) return '—'
@@ -79,7 +89,7 @@ function phaseClass(phase, ready) {
 function renderPods(pods) {
   const grid = document.getElementById('pod-grid')
   if (!pods || !pods.length) {
-    grid.innerHTML = '<div class="event-empty">Nenhum pod encontrado.</div>'
+    grid.innerHTML = `<div class="event-empty">${I18N.noPods}</div>`
     return
   }
   grid.innerHTML = pods.map(p => `
@@ -102,20 +112,20 @@ function renderPods(pods) {
 function renderEvents(events) {
   const el = document.getElementById('events-list')
   if (!events || !events.length) {
-    el.innerHTML = '<div class="event-empty">Nenhum restart registrado nesta sessão do operador.</div>'
+    el.innerHTML = `<div class="event-empty">${I18N.noRestarts}</div>`
     return
   }
   el.innerHTML = events.map((e, i) => `
     <div class="event-row ${i === 0 ? 'event-row--latest' : ''}">
       <div class="event-icon">↻</div>
       <div class="event-body">
-        <div class="event-title">Rolling restart disparado</div>
+        <div class="event-title">${I18N.rollingRestart}</div>
         <div class="event-meta">
           <span class="event-ts">${e.ts}</span>
           <span class="event-rv">secret rv: ${e.secretRevision || '—'}</span>
         </div>
       </div>
-      ${i === 0 ? '<span class="event-new">novo</span>' : ''}
+      ${i === 0 ? `<span class="event-new">${I18N.newBadge}</span>` : ''}
     </div>
   `).join('')
 }
@@ -126,25 +136,21 @@ async function refresh() {
     if (!r.ok) throw new Error(`HTTP ${r.status}`)
     const d = await r.json()
 
-    // timestamp
-    const ts = new Date().toLocaleTimeString()
-    document.getElementById('last-update').textContent = ts
+    document.getElementById('last-update').textContent = new Date().toLocaleTimeString()
 
-    // overall
     const allOk = d.deployment && d.deployment.ready >= d.deployment.desired && d.dbConnected
     document.getElementById('overall-dot').className =
       'overall-dot ' + (allOk ? 'overall-dot--ok' : 'overall-dot--warn')
     document.getElementById('overall-text').textContent =
-      allOk ? 'Tudo OK' : 'Atenção'
+      allOk ? I18N.allOk : I18N.attention
 
-    // nav dot
     const nd = document.getElementById('nav-health-dot')
     if (nd) nd.className = 'dash-dot ' + (allOk ? 'dash-dot--ok' : 'dash-dot--warn')
 
-    // metrics
     if (d.deployment) {
       document.getElementById('m-ready').textContent   = d.deployment.ready ?? '—'
-      document.getElementById('m-desired').textContent = `de ${d.deployment.desired} desejados`
+      document.getElementById('m-desired').textContent =
+        I18N.desired.replace('{{n}}', d.deployment.desired)
     }
     document.getElementById('m-db').textContent  = d.dbConnected ? '✓' : '✗'
     document.getElementById('m-db').className    =
@@ -156,13 +162,14 @@ async function refresh() {
       'metric-value ' + (d.operatorHealthy ? 'metric-value--ok' : 'metric-value--err')
 
     const count = d.pods ? d.pods.length : 0
-    document.getElementById('pod-count-badge').textContent = count + ' pod' + (count !== 1 ? 's' : '')
+    document.getElementById('pod-count-badge').textContent =
+      count + ' ' + (count !== 1 ? I18N.podBadgePlural : I18N.podBadge)
 
     renderPods(d.pods || [])
     renderEvents(d.events || [])
 
   } catch(e) {
-    document.getElementById('overall-text').textContent = 'Erro: ' + e.message
+    document.getElementById('overall-text').textContent = I18N.errorPrefix + e.message
   }
 }
 
