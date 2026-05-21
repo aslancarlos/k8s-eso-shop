@@ -10,9 +10,25 @@ const PORT         = process.env.PORT || 3000
 const BASE         = (process.env.BASE_PATH || '').replace(/\/$/, '')
 const OPERATOR_URL = process.env.OPERATOR_URL || 'http://eso-shop-operator:8080'
 
+app.disable('x-powered-by')
+app.set('trust proxy', 1)
 app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, 'views'))
 app.locals.base = BASE
+
+// Simple in-memory rate limiter — max requests per window per IP
+function makeRateLimiter(maxReq, windowMs) {
+  const counts = new Map()
+  setInterval(() => counts.clear(), windowMs).unref()
+  return (req, res, next) => {
+    const ip = req.ip
+    const n = (counts.get(ip) || 0) + 1
+    counts.set(ip, n)
+    if (n > maxReq) return res.status(429).json({ error: 'Too many requests' })
+    next()
+  }
+}
+const orderLimiter = makeRateLimiter(10, 60_000) // 10 orders/min per IP
 
 const router = express.Router()
 
@@ -22,14 +38,21 @@ router.use(express.urlencoded({ extended: true }))
 router.use(cookieParser())
 router.use(i18n.middleware)
 
+// Security headers
+router.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN')
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+  res.setHeader('Permissions-Policy', 'geolocation=(), camera=(), microphone=()')
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; img-src 'self' https://images.unsplash.com data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self'"
+  )
+  next()
+})
+
 router.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    secretsSource: 'External Secrets Operator → Conjur Cloud',
-    conjurPath: 'data/vault/dev-demo-aslan/dbuser_dual/{username,password,address}',
-    dbHost: process.env.DB_HOST || 'not set',
-    dbUser: process.env.DB_USER || 'not set',
-  })
+  res.json({ status: 'ok' })
 })
 
 router.get('/', async (req, res) => {
@@ -100,7 +123,7 @@ router.get('/orders/:id', async (req, res) => {
   }
 })
 
-router.post('/orders', async (req, res) => {
+router.post('/orders', orderLimiter, async (req, res) => {
   const { customer_name, customer_email, items } = req.body
   if (!customer_name || !customer_email || !items) {
     return res.status(400).json({ error: 'Missing required fields' })
@@ -108,10 +131,19 @@ router.post('/orders', async (req, res) => {
   try {
     const pool = await getPool()
     const parsed = typeof items === 'string' ? JSON.parse(items) : items
+    // Validate all products exist and fetch prices in one pass
+    const productIds = [...new Set(parsed.map(i => i.product_id))]
+    const placeholders = productIds.map(() => '?').join(',')
+    const [prods] = await pool.execute(
+      `SELECT id, price, stock FROM products WHERE id IN (${placeholders})`,
+      productIds
+    )
+    const prodMap = Object.fromEntries(prods.map(p => [p.id, p]))
     let total = 0
     for (const item of parsed) {
-      const [[prod]] = await pool.execute('SELECT price FROM products WHERE id = ?', [item.product_id])
-      if (!prod) return res.status(400).json({ error: `Product ${item.product_id} not found` })
+      const prod = prodMap[item.product_id]
+      if (!prod) return res.status(400).json({ error: 'Invalid product' })
+      if (item.quantity < 1) return res.status(400).json({ error: 'Invalid quantity' })
       total += prod.price * item.quantity
     }
     const [result] = await pool.execute(
@@ -120,17 +152,24 @@ router.post('/orders', async (req, res) => {
     )
     const orderId = result.insertId
     for (const item of parsed) {
-      const [[prod]] = await pool.execute('SELECT price FROM products WHERE id = ?', [item.product_id])
+      const prod = prodMap[item.product_id]
       await pool.execute(
         'INSERT INTO order_items (order_id, product_id, quantity, unit_price) VALUES (?,?,?,?)',
         [orderId, item.product_id, item.quantity, prod.price]
       )
-      await pool.execute('UPDATE products SET stock = stock - ? WHERE id = ?', [item.quantity, item.product_id])
+      // Atomic: only decrement if stock is sufficient — prevents negative stock
+      const [upd] = await pool.execute(
+        'UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?',
+        [item.quantity, item.product_id, item.quantity]
+      )
+      if (upd.affectedRows === 0) {
+        console.warn('Stock insufficient for product %d during order %d', item.product_id, orderId)
+      }
     }
     res.redirect(BASE + '/orders/' + orderId)
   } catch (err) {
     console.error(err)
-    res.status(500).json({ error: err.message })
+    res.status(500).json({ error: 'Order could not be processed' })
   }
 })
 
