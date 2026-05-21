@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= title || 'ESO Shop' %> · k8s-eso-shop</title>
+  <% if (locals.base) { %><base href="<%= base %>/" /><% } %>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="./" class="nav-brand">
+        <span class="brand-icon">🛒</span>
+        <span class="brand-text">ESO<span class="brand-accent">Shop</span></span>
+      </a>
+      <div class="nav-links">
+        <a href="products" class="nav-link">Products</a>
+        <a href="orders" class="nav-link">Orders</a>
+        <a href="secrets-info" class="nav-link nav-link--secrets">
+          <span class="secrets-dot"></span>Secrets Info
+        </a>
+      </div>
+    </div>
+  </nav>
+  <main class="main-content">

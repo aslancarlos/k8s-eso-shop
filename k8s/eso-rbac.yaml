@@ -1,0 +1,24 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: eso-tokenrequest
+  namespace: conjur
+rules:
+  - apiGroups: [""]
+    resources: ["serviceaccounts/token"]
+    resourceNames: ["springboot-app"]
+    verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: eso-tokenrequest
+  namespace: conjur
+subjects:
+  - kind: ServiceAccount
+    name: external-secrets
+    namespace: default
+roleRef:
+  kind: Role
+  name: eso-tokenrequest
+  apiGroup: rbac.authorization.k8s.io

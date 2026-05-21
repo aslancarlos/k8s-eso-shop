@@ -1,0 +1,34 @@
+# ===========================================================================
+# Conjur Policy — apply this in your Conjur UI or CLI before deploying
+# This grants the eso-shop-sa service account access to the DB secrets
+# ===========================================================================
+#
+# Step 1: Add the host identity for the ESO service account
+# (under your existing authn-jwt/eks-latam policy)
+#
+- !host
+  id: system:serviceaccount:eso-shop:eso-shop-sa
+  annotations:
+    authn-jwt/eks-latam/kubernetes.io/namespace: eso-shop
+    authn-jwt/eks-latam/kubernetes.io/serviceaccount/name: eso-shop-sa
+
+#
+# Step 2: Grant the host access to the DB secrets
+# (under your data/vault/dev-demo-aslan/dbuser_dual policy)
+#
+- !permit
+  role: !host system:serviceaccount:eso-shop:eso-shop-sa
+  privileges: [read, execute]
+  resources:
+    - !variable data/vault/dev-demo-aslan/dbuser_dual/username
+    - !variable data/vault/dev-demo-aslan/dbuser_dual/password
+    - !variable data/vault/dev-demo-aslan/dbuser_dual/address
+
+#
+# Step 3: Allow the host to authenticate via authn-jwt/eks-latam
+# (add to the webservice/consumers policy)
+#
+- !grant
+  role: !group conjur/authn-jwt/eks-latam/consumers
+  members:
+    - !host system:serviceaccount:eso-shop:eso-shop-sa

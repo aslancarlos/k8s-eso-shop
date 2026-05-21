@@ -1,0 +1,59 @@
+<%- include('partials/head', { title: order ? 'Order #' + order.id : 'Order' }) %>
+
+<div class="page-header">
+  <a href="orders" class="back-link">← Orders</a>
+  <% if (order) { %>
+    <h1 class="page-title">Order #<%= order.id %></h1>
+  <% } %>
+</div>
+
+<% if (error) { %>
+  <div class="alert alert--error"><strong>Error:</strong> <%= error %></div>
+<% } %>
+
+<% if (order) { %>
+  <div class="order-detail-grid">
+    <div class="order-meta card">
+      <h2 class="card-title">Customer</h2>
+      <p><strong><%= order.customer_name %></strong></p>
+      <p class="text-muted"><%= order.customer_email %></p>
+      <p class="mt-1">Status: <span class="status-badge status-badge--<%= order.status %>"><%= order.status %></span></p>
+      <p class="text-muted mt-1"><%= new Date(order.created_at).toLocaleString() %></p>
+    </div>
+
+    <div class="order-items card">
+      <h2 class="card-title">Items</h2>
+      <table class="items-table">
+        <thead>
+          <tr><th>Product</th><th>Qty</th><th>Unit Price</th><th>Subtotal</th></tr>
+        </thead>
+        <tbody>
+          <% items.forEach(item => { %>
+            <tr>
+              <td>
+                <div class="item-name-cell">
+                  <img src="<%= item.image_url %>" class="item-thumb" alt="" />
+                  <div>
+                    <div><%= item.name %></div>
+                    <div class="text-muted text-sm"><%= item.category %></div>
+                  </div>
+                </div>
+              </td>
+              <td class="text-center"><%= item.quantity %></td>
+              <td>$<%= parseFloat(item.unit_price).toFixed(2) %></td>
+              <td>$<%= (item.quantity * item.unit_price).toFixed(2) %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" class="text-right"><strong>Total</strong></td>
+            <td><strong>$<%= parseFloat(order.total).toFixed(2) %></strong></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+<% } %>
+
+<%- include('partials/foot') %>

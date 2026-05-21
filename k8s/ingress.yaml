@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: eso-shop
+  namespace: eso-shop
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/use-regex: "true"
+spec:
+  ingressClassName: nginx-internal
+  tls:
+    - hosts:
+        - demo.minha.cloud
+      secretName: k8scert
+  rules:
+    - host: demo.minha.cloud
+      http:
+        paths:
+          - path: /k8s-eso(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: eso-shop
+                port:
+                  number: 80
