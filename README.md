@@ -1,5 +1,7 @@
 # k8s-eso-shop
 
+[![build](https://github.com/aslancarlos/k8s-eso-shop/actions/workflows/build.yml/badge.svg)](https://github.com/aslancarlos/k8s-eso-shop/actions/workflows/build.yml) [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+
 Demo e-commerce application that proves the full **External Secrets Operator → CyberArk Conjur Cloud** secret chain on Kubernetes. Every credential the app touches — DB host, user, password — is fetched from Conjur at runtime via ESO, never stored in source code or baked into images.
 
 Live at: `https://demo.minha.cloud/k8s-eso/`
