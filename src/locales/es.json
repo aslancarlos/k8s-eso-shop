@@ -6,10 +6,10 @@
     "dashboard": "Dashboard"
   },
   "home": {
-    "eyebrow": "PANW|IDIRA Conjur · External Secrets Operator · Kubernetes",
+    "eyebrow": "PANW|IDIRA Secrets Manager · External Secrets Operator · Kubernetes",
     "title": "E-commerce",
     "title_accent": "Zero-Trust",
-    "subtitle": "Una demo en vivo donde cada credencial de base de datos se obtiene dinámicamente desde <strong>Conjur Cloud</strong> via <strong>External Secrets Operator</strong> — sin contraseñas en el código, sin .env, sin secretos en la imagen.",
+    "subtitle": "Una demo en vivo donde cada credencial de base de datos se obtiene dinámicamente desde <strong>Secrets Manager</strong> via <strong>External Secrets Operator</strong> — sin contraseñas en el código, sin .env, sin secretos en la imagen.",
     "cta_browse": "Ver Productos",
     "cta_how": "Cómo funciona →",
     "featured": "Productos Destacados",
@@ -20,7 +20,7 @@
     "diag_synced": "↑ sincronizado por",
     "diag_eso": "ESO Controller",
     "diag_jwt": "↓ autenticación JWT",
-    "diag_conjur": "Conjur Cloud"
+    "diag_conjur": "Secrets Manager"
   },
   "products": {
     "title": "Productos",
@@ -51,13 +51,13 @@
   },
   "secrets_info": {
     "title": "Cómo Fluyen los Secrets",
-    "subtitle": "Cero credenciales en el código — entregadas por ESO → Conjur en tiempo de ejecución",
+    "subtitle": "Cero credenciales en el código — entregadas por ESO → Secrets Manager en tiempo de ejecución",
     "chain_title": "Cadena de entrega de secretos",
-    "step1": "<strong>ClusterSecretStore</strong> — ESO se autentica con Conjur Cloud vía <code>authn-jwt/eks-latam</code> usando el JWT de la service account Kubernetes del pod",
-    "step2": "<strong>ExternalSecret</strong> mapea rutas de Conjur a un K8s Secret:",
+    "step1": "<strong>ClusterSecretStore</strong> — ESO se autentica con Secrets Manager vía <code>authn-jwt/eks-latam</code> usando el JWT de la service account Kubernetes del pod",
+    "step2": "<strong>ExternalSecret</strong> mapea rutas de Secrets Manager a un K8s Secret:",
     "step3": "<strong>K8s Secret</strong> <code>eso-shop-db-creds</code> es creado/actualizado por ESO",
     "step4": "<strong>Deployment</strong> monta el secret como variables de entorno vía <code>envFrom.secretRef</code>",
-    "step5": "<strong>App</strong> lee <code>DB_HOST</code>, <code>DB_USER</code>, <code>DB_PASS</code> del entorno — sin SDK de Conjur, sin lectura de archivos",
+    "step5": "<strong>App</strong> lee <code>DB_HOST</code>, <code>DB_USER</code>, <code>DB_PASS</code> del entorno — sin SDK de Secrets Manager, sin lectura de archivos",
     "live_status": "Estado de conexión en vivo",
     "connected": "Conectado",
     "error_pill": "Error",

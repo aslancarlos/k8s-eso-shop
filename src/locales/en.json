@@ -6,10 +6,10 @@
     "dashboard": "Dashboard"
   },
   "home": {
-    "eyebrow": "PANW|IDIRA Conjur · External Secrets Operator · Kubernetes",
+    "eyebrow": "PANW|IDIRA Secrets Manager · External Secrets Operator · Kubernetes",
     "title": "Zero-Trust",
     "title_accent": "Ecommerce",
-    "subtitle": "A live demo where every database credential is fetched dynamically from <strong>Conjur Cloud</strong> via the <strong>External Secrets Operator</strong> — no hardcoded passwords, no .env file, no secret baked in the image.",
+    "subtitle": "A live demo where every database credential is fetched dynamically from <strong>Secrets Manager</strong> via the <strong>External Secrets Operator</strong> — no hardcoded passwords, no .env file, no secret baked in the image.",
     "cta_browse": "Browse Products",
     "cta_how": "How it works →",
     "featured": "Featured Products",
@@ -20,7 +20,7 @@
     "diag_synced": "↑ synced by",
     "diag_eso": "ESO Controller",
     "diag_jwt": "↓ JWT authn",
-    "diag_conjur": "Conjur Cloud"
+    "diag_conjur": "Secrets Manager"
   },
   "products": {
     "title": "Products",
@@ -51,13 +51,13 @@
   },
   "secrets_info": {
     "title": "How Secrets Flow",
-    "subtitle": "Zero credentials in code — delivered by ESO → Conjur at runtime",
+    "subtitle": "Zero credentials in code — delivered by ESO → Secrets Manager at runtime",
     "chain_title": "Secret delivery chain",
-    "step1": "<strong>ClusterSecretStore</strong> — ESO authenticates with Conjur Cloud via <code>authn-jwt/eks-latam</code> using the pod's Kubernetes service account JWT",
-    "step2": "<strong>ExternalSecret</strong> maps Conjur paths to a K8s Secret:",
+    "step1": "<strong>ClusterSecretStore</strong> — ESO authenticates with Secrets Manager via <code>authn-jwt/eks-latam</code> using the pod's Kubernetes service account JWT",
+    "step2": "<strong>ExternalSecret</strong> maps Secrets Manager paths to a K8s Secret:",
     "step3": "<strong>K8s Secret</strong> <code>eso-shop-db-creds</code> is created/refreshed by ESO",
     "step4": "<strong>Deployment</strong> mounts the secret as environment variables via <code>envFrom.secretRef</code>",
-    "step5": "<strong>App</strong> reads <code>DB_HOST</code>, <code>DB_USER</code>, <code>DB_PASS</code> from env — no Conjur SDK, no file reads",
+    "step5": "<strong>App</strong> reads <code>DB_HOST</code>, <code>DB_USER</code>, <code>DB_PASS</code> from env — no Secrets Manager SDK, no file reads",
     "live_status": "Live connection status",
     "connected": "Connected",
     "error_pill": "Error",

@@ -3,11 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title><%= title || 'ESO Shop' %> · k8s-eso-shop</title>
+  <title><%= title || 'ESO Shop' %> · k8s-eso-shop · IDIRA</title>
   <% if (locals.base) { %><base href="<%= base %>/" /><% } %>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+
+  <!-- Theme init: applied before paint to avoid flash of wrong theme -->
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('idira-theme');
+        var theme = saved || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        document.documentElement.dataset.theme = theme;
+      } catch (e) {
+        document.documentElement.dataset.theme = 'dark';
+      }
+    })();
+  </script>
 </head>
 <body>
+  <a href="#main" class="skip-link">Skip to main content</a>
   <nav class="navbar">
     <div class="nav-inner">
       <a href="./" class="nav-brand">
@@ -23,6 +41,22 @@
         <a href="dashboard" class="nav-link nav-link--dashboard">
           <span class="dash-dot" id="nav-health-dot"></span><%= t('nav.dashboard') %>
         </a>
+
+        <button
+          type="button"
+          class="theme-toggle"
+          aria-label="Toggle dark / light theme"
+          onclick="(function(){var d=document.documentElement;var c=d.dataset.theme==='dark'?'light':'dark';d.dataset.theme=c;try{localStorage.setItem('idira-theme',c);}catch(e){}})()"
+        >
+          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+          </svg>
+          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+
         <div class="lang-switcher">
           <% ['pt','en','es'].forEach(function(l) { %>
             <a href="?lang=<%= l %>"
@@ -34,4 +68,4 @@
       </div>
     </div>
   </nav>
-  <main class="main-content">
+  <main id="main" class="main-content">

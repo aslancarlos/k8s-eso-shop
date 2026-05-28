@@ -1,18 +1,41 @@
+/* ─── IDIRA design tokens — theme-aware ──────────────────────────── */
+:root,
+[data-theme="dark"] {
+  --bg:          #060c18;
+  --bg-card:     #0e1726;
+  --bg-card-2:   #131e30;
+  --border:      #1e2a44;
+  --text:        #f0f4fc;
+  --text-muted:  #8b96ad;
+  --accent:      #2589ff;       /* IDIRA blue-2 */
+  --accent-green:#22c55e;
+  --accent-purple:#a78bfa;
+  --accent-gold: #ffb800;       /* IDIRA gold */
+  --accent-red:  #fa582d;       /* IDIRA orange — used for danger/warn */
+  --scrim:       rgba(0,0,0,.75);
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --bg:          #ffffff;
+  --bg-card:     #ffffff;
+  --bg-card-2:   #f5f7fb;
+  --border:      #e4e8f0;
+  --text:        #0b0f19;
+  --text-muted:  #5b6478;
+  --accent:      #0067ff;       /* IDIRA blue */
+  --accent-green:#16a34a;
+  --accent-purple:#6048d6;
+  --accent-gold: #b88800;
+  --accent-red:  #d14a1a;
+  --scrim:       rgba(11,15,25,.55);
+  color-scheme: light;
+}
+
 :root {
-  --bg: #0d1117;
-  --bg-card: #161b22;
-  --bg-card-2: #1c2128;
-  --border: #30363d;
-  --text: #e6edf3;
-  --text-muted: #8b949e;
-  --accent: #58a6ff;
-  --accent-green: #3fb950;
-  --accent-purple: #bc8cff;
-  --accent-gold: #d29922;
-  --accent-red: #f85149;
   --radius: 10px;
-  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  --font: 'Onest', system-ui, -apple-system, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -23,6 +46,62 @@ body {
   color: var(--text);
   line-height: 1.6;
   min-height: 100vh;
+  transition: background-color 0.25s cubic-bezier(.2,.7,.2,1),
+              color 0.25s cubic-bezier(.2,.7,.2,1);
+}
+
+/* Visible focus on all interactive elements (a11y) */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+:focus:not(:focus-visible) { outline: none; }
+
+/* Skip-to-content link (WCAG 2.4.1) */
+.skip-link {
+  position: absolute; left: 0; top: 0;
+  transform: translateY(-150%);
+  z-index: 100;
+  background: var(--accent); color: #fff;
+  padding: 14px 22px;
+  font: 600 14px/1 var(--font);
+  border-radius: 0 0 14px 0;
+  transition: transform 0.25s cubic-bezier(.2,.7,.2,1);
+}
+.skip-link:focus { transform: translateY(0); }
+
+/* Theme toggle button */
+.theme-toggle {
+  width: 36px; height: 36px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text);
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+.theme-toggle:hover {
+  background: var(--bg-card-2);
+  border-color: var(--text-muted);
+  transform: rotate(15deg);
+}
+.theme-toggle svg { width: 16px; height: 16px; }
+.theme-toggle .sun  { display: block; }
+.theme-toggle .moon { display: none; }
+[data-theme="dark"] .theme-toggle .sun  { display: none; }
+[data-theme="dark"] .theme-toggle .moon { display: block; }
+
+/* Respect prefers-reduced-motion (WCAG 2.3.3) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ── NAV ────────────────────────────────── */
