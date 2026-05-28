@@ -5,6 +5,8 @@
 Demo e-commerce application that proves the full **External Secrets Operator → IDIRA Secrets Manager** secret chain on Kubernetes. Every credential the app touches — DB host, user, password — is fetched from IDIRA at runtime via ESO, never stored in source code or baked into images.
 
 > **2026-05-27 — rebrand & theme** · Visual language now follows [paloaltonetworks.com/idira](https://www.paloaltonetworks.com/idira): Onest typography + IBM Plex Mono, IDIRA palette (`#0067ff` blue / `#fa582d` orange), **dark + light theme** with a sun/moon toggle in the nav (persists to `localStorage`, falls back to `prefers-color-scheme`). Skip-to-content link, visible focus rings, and `prefers-reduced-motion` support (WCAG 2.4.1 / 2.3.3). Implemented in [`src/views/partials/head.ejs`](src/views/partials/head.ejs) and [`public/style.css`](public/style.css).
+> 
+> Full design + UX + theme docs: [`docs/IDIRA-REDESIGN.md`](docs/IDIRA-REDESIGN.md).
 
 Live at: `https://demo.minha.cloud/k8s-eso/`
 
@@ -49,7 +51,7 @@ External Secrets Operator v2.1  (ClusterSecretStore: conjur-store)
    │  JWT auth (eks-latam authenticator)
    │  ServiceAccount: springboot-app / eso-shop-sa
    ▼
-CyberArk Conjur Cloud  (latamlab.secretsmgr.cyberark.cloud)
+IDIRA Secrets Manager  (latamlab.secretsmgr.cyberark.cloud — wire hostname unchanged)
    └── data/vault/dev-demo-aslan/dbuser_dual/{username,password,address}
 
 
@@ -68,7 +70,7 @@ Python Operator (eso-shop-operator)
 | App | Node.js 20, Express 4, EJS templates |
 | Database | MySQL 8 (external) |
 | Secret management | External Secrets Operator v2.1 |
-| Secret vault | CyberArk Conjur Cloud |
+| Secret vault | IDIRA Secrets Manager |
 | Custom operator | Python 3.12, `kubernetes` SDK |
 | Container | Docker (linux/amd64) |
 | Orchestration | Kubernetes (EKS) |
@@ -149,7 +151,7 @@ Open `http://localhost:3000`.
 
 **Prerequisites:**
 - EKS cluster with ESO v2.1 installed (`external-secrets` namespace)
-- CyberArk Conjur Cloud tenant with `authn-jwt/eks-latam` authenticator enabled
+- IDIRA Secrets Manager tenant with `authn-jwt/eks-latam` authenticator enabled
 - `dockerhub-pull` imagePullSecret in `eso-shop` namespace
 - `k8scert` TLS secret in `conjur` namespace (cert-manager + cloud-venafi-issuer)
 
