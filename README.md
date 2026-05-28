@@ -2,7 +2,9 @@
 
 [![build](https://github.com/aslancarlos/k8s-eso-shop/actions/workflows/build.yml/badge.svg)](https://github.com/aslancarlos/k8s-eso-shop/actions/workflows/build.yml) [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
-Demo e-commerce application that proves the full **External Secrets Operator → CyberArk Conjur Cloud** secret chain on Kubernetes. Every credential the app touches — DB host, user, password — is fetched from Conjur at runtime via ESO, never stored in source code or baked into images.
+Demo e-commerce application that proves the full **External Secrets Operator → IDIRA Secrets Manager** secret chain on Kubernetes. Every credential the app touches — DB host, user, password — is fetched from IDIRA at runtime via ESO, never stored in source code or baked into images.
+
+> **2026-05-27 — rebrand & theme** · Visual language now follows [paloaltonetworks.com/idira](https://www.paloaltonetworks.com/idira): Onest typography + IBM Plex Mono, IDIRA palette (`#0067ff` blue / `#fa582d` orange), **dark + light theme** with a sun/moon toggle in the nav (persists to `localStorage`, falls back to `prefers-color-scheme`). Skip-to-content link, visible focus rings, and `prefers-reduced-motion` support (WCAG 2.4.1 / 2.3.3). Implemented in [`src/views/partials/head.ejs`](src/views/partials/head.ejs) and [`public/style.css`](public/style.css).
 
 Live at: `https://demo.minha.cloud/k8s-eso/`
 
@@ -12,11 +14,12 @@ Live at: `https://demo.minha.cloud/k8s-eso/`
 
 | Capability | How |
 |---|---|
-| Zero-hardcoded secrets | All DB creds via ESO → Conjur Cloud JWT auth |
+| Zero-hardcoded secrets | All DB creds via ESO → IDIRA Secrets Manager JWT auth |
 | Secret rotation | ESO polls every 1 min; Python operator triggers zero-downtime rolling restart |
 | Production-grade K8s | PodDisruptionBudget, rolling update, liveness/readiness/startup probes |
 | OWASP hardening | Security headers, CSP, rate limiting, atomic DB operations |
 | i18n | PT (default) / EN / ES, cookie-persisted |
+| Theme | Dark + light, user-toggleable, system-preference fallback |
 
 ---
 
