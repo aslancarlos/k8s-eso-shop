@@ -1,60 +1,26 @@
 <%- include('partials/head', { title: t('home.featured') }) %>
 
-<!-- ════════════════════════════════════════════════════════════
-     IDIRA hero — deep navy + iridescent mesh + diagonal CTAs
-     ════════════════════════════════════════════════════════════ -->
-<section class="idira-hero">
-  <div class="idira-hero-mesh" aria-hidden="true"></div>
-  <div class="idira-hero-grid" aria-hidden="true"></div>
-
-  <div class="idira-hero-inner">
-    <div class="idira-eyebrow">
-      <span class="idira-eyebrow-dot"></span>
-      <%= t('home.eyebrow') %>
+<section class="hero">
+  <div class="hero-text">
+    <div class="hero-eyebrow"><%= t('home.eyebrow') %></div>
+    <h1 class="hero-title"><%= t('home.title') %> <span class="accent"><%= t('home.title_accent') %></span></h1>
+    <p class="hero-subtitle"><%- t('home.subtitle') %></p>
+    <div class="hero-actions">
+      <a href="products" class="btn btn--primary"><%= t('home.cta_browse') %></a>
+      <a href="secrets-info" class="btn btn--outline"><%= t('home.cta_how') %></a>
     </div>
-
-    <h1 class="idira-headline">
-      <%= t('home.title') %>
-      <em class="idira-shimmer"><%= t('home.title_accent') %></em><span class="idira-headline-dot">.</span>
-    </h1>
-
-    <p class="idira-lede"><%- t('home.subtitle') %></p>
-
-    <div class="idira-hero-actions">
-      <a href="products" class="idira-cta idira-cta-primary">
-        <%= t('home.cta_browse') %>
-        <span class="idira-cta-arrow">→</span>
-      </a>
-      <a href="secrets-info" class="idira-cta idira-cta-on-deep">
-        <%= t('home.cta_how') %>
-        <span class="idira-cta-arrow">↗</span>
-      </a>
-    </div>
-
-    <div class="idira-stat-strip">
-      <div class="idira-stat">
-        <div class="idira-stat-num">04 <span class="idira-stat-unit">workloads</span></div>
-        <div class="idira-stat-label">Spring · .NET · Actions · ESO</div>
-      </div>
-      <div class="idira-stat">
-        <div class="idira-stat-num">01 <span class="idira-stat-unit">secrets manager</span></div>
-        <div class="idira-stat-label">latamlab.secretsmgr.idira.cloud</div>
-      </div>
-      <div class="idira-stat">
-        <div class="idira-stat-num idira-stat-accent">00 <span class="idira-stat-unit">at rest</span></div>
-        <div class="idira-stat-label">Secrets baked into images or repos</div>
-      </div>
-      <div class="idira-stat">
-        <div class="idira-stat-num">JWT <span class="idira-stat-unit">auth</span></div>
-        <div class="idira-stat-label">authn-jwt · federated trust</div>
-      </div>
-    </div>
+  </div>
+  <div class="hero-diagram">
+    <div class="diag-node diag-node--app"><%= t('home.diag_app') %></div>
+    <div class="diag-arrow"><%= t('home.diag_reads') %></div>
+    <div class="diag-node diag-node--k8s"><%= t('home.diag_k8s') %></div>
+    <div class="diag-arrow"><%= t('home.diag_synced') %></div>
+    <div class="diag-node diag-node--eso"><%= t('home.diag_eso') %></div>
+    <div class="diag-arrow"><%= t('home.diag_jwt') %></div>
+    <div class="diag-node diag-node--conjur"><%= t('home.diag_conjur') %></div>
   </div>
 </section>
 
-<!-- ════════════════════════════════════════════════════════════
-     Featured products — IDIRA card grid
-     ════════════════════════════════════════════════════════════ -->
 <section class="section">
   <div class="section-header">
     <h2 class="section-title"><%= t('home.featured') %></h2>
@@ -65,7 +31,7 @@
   <% } %>
   <div class="product-grid">
     <% products.slice(0, 8).forEach(p => { %>
-      <div class="product-card idira-card">
+      <div class="product-card">
         <div class="product-img-wrap">
           <img src="<%= p.image_url %>" alt="<%= p.name %>" class="product-img" loading="lazy" />
           <span class="product-badge"><%= p.category %></span>
@@ -80,28 +46,6 @@
         </div>
       </div>
     <% }) %>
-  </div>
-</section>
-
-<!-- ════════════════════════════════════════════════════════════
-     IDIRA promise band — Zero hardcoded secrets
-     ════════════════════════════════════════════════════════════ -->
-<section class="idira-promise-section">
-  <div class="idira-promise">
-    <div class="idira-promise-inner">
-      <p class="idira-promise-eyebrow">// The promise</p>
-      <div class="idira-promise-zero" aria-label="Zero">0</div>
-      <h3 class="idira-promise-claim">
-        Static credentials in source, images, env vars or CI secrets.
-        <mark>The app never knew the password changed. Users never knew either.</mark>
-      </h3>
-      <p class="idira-promise-detail">
-        Secret rotation is invisible. IDIRA Secrets Manager rotates,
-        External Secrets Operator syncs, the watcher operator rolls — and
-        the e-commerce stays up. That is the point of moving credentials
-        out of code and into a federated identity layer.
-      </p>
-    </div>
   </div>
 </section>
 
