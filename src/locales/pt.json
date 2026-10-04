@@ -62,7 +62,22 @@
     "connected": "Conectado",
     "error_pill": "Erro",
     "db_label": "Banco de dados",
-    "db_time": "Hora do BD"
+    "db_time": "Hora do BD",
+    "guided_hint": "Percorra a cadeia — use ◀ ▶, os pontos, ou deixe reproduzir",
+    "b_prev": "Passo anterior",
+    "b_next": "Próximo passo",
+    "b_play": "Reproduzir",
+    "b_pause": "Pausar",
+    "node_conjur": "Conjur Cloud",
+    "nsub_conjur": "Cofre de segredos",
+    "node_eso": "ESO",
+    "nsub_eso": "External Secrets Operator",
+    "node_secret": "K8s Secret",
+    "nsub_secret": "eso-shop-db-creds",
+    "node_deploy": "Deployment",
+    "nsub_deploy": "eso-shop",
+    "node_app": "App",
+    "nsub_app": "Node.js"
   },
   "dashboard": {
     "title": "Dashboard ao Vivo",
@@ -88,6 +103,8 @@
   "common": {
     "db_error": "Erro no BD:",
     "footer_creds": "Credenciais via",
-    "footer_via": "→"
+    "footer_via": "→",
+    "rollout_title": "Pods reiniciados",
+    "rollout_sub": "Novas credenciais aplicadas — zero downtime"
   }
 }

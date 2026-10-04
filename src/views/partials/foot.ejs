@@ -10,5 +10,42 @@
       </div>
     </div>
   </footer>
+
+  <!-- Rollout-restart toasts: poll our Deployment's rollout status; toast on change -->
+  <div class="toast-stack" id="idiraToasts" aria-live="polite" aria-atomic="false"></div>
+  <script>
+    (function () {
+      var URL = '<%= base %>/rollout-status';
+      var last = null, first = true;
+      function toast(title, sub) {
+        var stack = document.getElementById('idiraToasts');
+        if (!stack) return;
+        var el = document.createElement('div');
+        el.className = 'toast';
+        el.setAttribute('role', 'status');
+        el.innerHTML =
+          '<span class="toast-ic" aria-hidden="true">' +
+          '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-6.4 2.6L3 8"/><path d="M3 3v5h5"/></svg>' +
+          '</span><div class="toast-body"><strong><%= t("common.rollout_title") %></strong><span><%= t("common.rollout_sub") %></span></div>';
+        stack.appendChild(el);
+        setTimeout(function () {
+          el.classList.add('out');
+          setTimeout(function () { el.remove(); }, 400);
+        }, 5000);
+      }
+      function poll() {
+        fetch(URL, { cache: 'no-store' })
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            if (!d || !d.sig) return;
+            if (first) { last = d.sig; first = false; return; }
+            if (d.sig !== last) { last = d.sig; toast(); }
+          })
+          .catch(function () {});
+      }
+      setInterval(poll, 6000);
+      poll();
+    })();
+  </script>
 </body>
 </html>

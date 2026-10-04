@@ -1,9 +1,42 @@
 const express = require('express')
 const path = require('path')
 const http = require('http')
+const https = require('https')
+const fs = require('fs')
 const cookieParser = require('cookie-parser')
 const { getPool } = require('./db')
 const i18n = require('./i18n')
+
+// ── In-cluster read of our own Deployment (for rollout-restart notifications) ──
+const SA_DIR          = '/var/run/secrets/kubernetes.io/serviceaccount'
+const SELF_NS         = process.env.POD_NAMESPACE || 'eso-shop'
+const SELF_DEPLOYMENT = process.env.SELF_DEPLOYMENT || 'eso-shop'
+const readSA = f => { try { return fs.readFileSync(`${SA_DIR}/${f}`, 'utf8').trim() } catch { return null } }
+
+function getSelfDeployment() {
+  return new Promise((resolve, reject) => {
+    const token = readSA('token')
+    const ca    = readSA('ca.crt')
+    if (!token || !ca) return reject(new Error('not running in-cluster'))
+    const req = https.request({
+      host: process.env.KUBERNETES_SERVICE_HOST || 'kubernetes.default.svc',
+      port: process.env.KUBERNETES_SERVICE_PORT || 443,
+      path: `/apis/apps/v1/namespaces/${SELF_NS}/deployments/${SELF_DEPLOYMENT}`,
+      method: 'GET', ca, timeout: 4000,
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+    }, r => {
+      let data = ''
+      r.on('data', c => (data += c))
+      r.on('end', () => {
+        if (r.statusCode !== 200) return reject(new Error(`k8s ${r.statusCode}`))
+        try { resolve(JSON.parse(data)) } catch (e) { reject(e) }
+      })
+    })
+    req.on('error', reject)
+    req.on('timeout', () => req.destroy(new Error('timeout')))
+    req.end()
+  })
+}
 
 const app = express()
 const PORT         = process.env.PORT || 3000
@@ -53,6 +86,27 @@ router.use((req, res, next) => {
 
 router.get('/health', (req, res) => {
   res.json({ status: 'ok' })
+})
+
+// Rollout status of our own Deployment — the client polls this and shows a
+// toast whenever `sig` changes (a rollout restart bumps restartedAt / generation).
+router.get('/rollout-status', async (req, res) => {
+  try {
+    const dep = await getSelfDeployment()
+    const ann = (dep.spec && dep.spec.template && dep.spec.template.metadata && dep.spec.template.metadata.annotations) || {}
+    const restartedAt = ann['kubectl.kubernetes.io/restartedAt'] || ann['idira.restartedAt'] || ''
+    const st = dep.status || {}
+    const replicas = st.replicas || 0
+    const ready    = st.readyReplicas || 0
+    const updated  = st.updatedReplicas || 0
+    res.json({
+      sig: `${restartedAt}|${(dep.metadata && dep.metadata.generation) || 0}`,
+      restartedAt, replicas, ready, updated,
+      rolling: updated < replicas || ready < replicas,
+    })
+  } catch (e) {
+    res.json({ sig: null, error: e.message })
+  }
 })
 
 router.get('/', async (req, res) => {

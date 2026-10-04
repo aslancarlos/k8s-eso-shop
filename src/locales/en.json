@@ -62,7 +62,22 @@
     "connected": "Connected",
     "error_pill": "Error",
     "db_label": "Database",
-    "db_time": "DB time"
+    "db_time": "DB time",
+    "guided_hint": "Step through the chain — use ◀ ▶, the dots, or let it play",
+    "b_prev": "Previous step",
+    "b_next": "Next step",
+    "b_play": "Play",
+    "b_pause": "Pause",
+    "node_conjur": "Conjur Cloud",
+    "nsub_conjur": "Secrets vault",
+    "node_eso": "ESO",
+    "nsub_eso": "External Secrets Operator",
+    "node_secret": "K8s Secret",
+    "nsub_secret": "eso-shop-db-creds",
+    "node_deploy": "Deployment",
+    "nsub_deploy": "eso-shop",
+    "node_app": "App",
+    "nsub_app": "Node.js"
   },
   "dashboard": {
     "title": "Live Dashboard",
@@ -88,6 +103,8 @@
   "common": {
     "db_error": "DB Error:",
     "footer_creds": "Credentials via",
-    "footer_via": "→"
+    "footer_via": "→",
+    "rollout_title": "Pods restarted",
+    "rollout_sub": "New credentials picked up — zero downtime"
   }
 }
