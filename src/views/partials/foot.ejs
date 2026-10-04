@@ -1,14 +1,153 @@
   </main>
   <footer class="footer">
     <div class="footer-inner">
-      <div class="footer-badge">
-        <span class="badge-icon">🔐</span>
-        <span><%= t('common.footer_creds') %> <strong>External Secrets Operator</strong> <%= t('common.footer_via') %> <strong>PANW|IDIRA Conjur</strong></span>
-      </div>
-      <div class="footer-path">
-        <code>data/vault/dev-demo-aslan/dbuser_dual/{username,password,address}</code>
-      </div>
+      <p class="footer-badge">
+        <span class="footer-ic" aria-hidden="true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </span>
+        <span><%= t('common.footer_creds') %> <strong>External Secrets Operator</strong> <%= t('common.footer_via') %> <strong>IDIRA Secrets Manager</strong></span>
+      </p>
+      <code class="footer-path">data/vault/dev-demo-aslan/dbuser_dual/{username,password,address}</code>
     </div>
   </footer>
+
+  <!-- Rollout-restart toasts: poll our Deployment's rollout status; toast on change -->
+  <div class="toast-stack" id="idiraToasts" aria-live="polite" aria-atomic="false"></div>
+  <script>
+    (function () {
+      var URL = '<%= base %>/rollout-status';
+      var last = null, first = true;
+      function toast() {
+        var stack = document.getElementById('idiraToasts');
+        if (!stack) return;
+        var el = document.createElement('div');
+        el.className = 'toast';
+        el.setAttribute('role', 'status');
+        el.innerHTML =
+          '<span class="toast-ic" aria-hidden="true">' +
+          '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-6.4 2.6L3 8"/><path d="M3 3v5h5"/></svg>' +
+          '</span><div class="toast-body"><strong><%= t("common.rollout_title") %></strong><span><%= t("common.rollout_sub") %></span></div>';
+        stack.appendChild(el);
+        setTimeout(function () {
+          el.classList.add('out');
+          setTimeout(function () { el.remove(); }, 400);
+        }, 5000);
+      }
+      function poll() {
+        fetch(URL, { cache: 'no-store' })
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            if (!d || !d.sig) return;
+            if (first) { last = d.sig; first = false; return; }
+            if (d.sig !== last) { last = d.sig; toast(); }
+          })
+          .catch(function () {});
+      }
+      setInterval(poll, 6000);
+      poll();
+    })();
+  </script>
+
+  <!-- Academy top bar behaviour: theme toggle (shared key with the Academy),
+       accesses counter and Like button (same endpoints as VisitCounter.tsx and
+       LikeButton.tsx; both stay hidden when the endpoints are unavailable). -->
+  <script>
+    (function () {
+      var THEME_KEY = 'idira-theme';
+      var LIKED_KEY = 'idira-liked';
+      var html = document.documentElement;
+      var bar = document.getElementById('academyBar');
+      if (!bar) return;
+      var lang = bar.getAttribute('data-lang') || 'en';
+      var T = {};
+      try { T = JSON.parse(bar.getAttribute('data-i18n') || '{}'); } catch (e) {}
+      function fill(s, vars) {
+        return String(s || '').replace(/\{\{(\w+)\}\}/g, function (_, k) { return vars[k] != null ? vars[k] : ''; });
+      }
+      function isJson(r) { return r.ok && (r.headers.get('content-type') || '').indexOf('json') !== -1; }
+
+      // ── Theme ──
+      var toggle = document.getElementById('themeToggle');
+      function current() { return html.dataset.theme === 'light' ? 'light' : 'dark'; }
+      function apply(theme) {
+        html.dataset.theme = theme;
+        html.classList.toggle('dark', theme === 'dark');
+        if (toggle) toggle.setAttribute('aria-pressed', String(theme === 'dark'));
+      }
+      apply(current());
+      if (toggle) toggle.addEventListener('click', function () {
+        var next = current() === 'dark' ? 'light' : 'dark';
+        try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+        apply(next);
+      });
+      // Follow the system preference only while the visitor has no explicit choice.
+      if (window.matchMedia) {
+        var mq = window.matchMedia('(prefers-color-scheme: light)');
+        var onChange = function (e) {
+          try { if (localStorage.getItem(THEME_KEY)) return; } catch (err) { return; }
+          apply(e.matches ? 'light' : 'dark');
+        };
+        if (mq.addEventListener) mq.addEventListener('change', onChange);
+      }
+      // Another tab (this app or the Academy) changed the theme.
+      window.addEventListener('storage', function (e) {
+        if (e.key === THEME_KEY && (e.newValue === 'light' || e.newValue === 'dark')) apply(e.newValue);
+      });
+
+      // ── Accesses (/stats/visits.json) ──
+      var vc = document.getElementById('visitCounter');
+      fetch('/stats/visits.json', { cache: 'no-cache' })
+        .then(function (r) { return isJson(r) ? r.json() : null; })
+        .then(function (d) {
+          if (!d || typeof d.accesses !== 'number' || !isFinite(d.accesses) || !vc) return;
+          var n = d.accesses;
+          var step = n >= 1000000 ? 100000 : n >= 1000 ? 1000 : 1;
+          var count = new Intl.NumberFormat(lang, { notation: 'compact', maximumFractionDigits: 1 }).format(Math.floor(n / step) * step);
+          var exact = new Intl.NumberFormat(lang).format(n);
+          var since = d.since;
+          try { since = new Intl.DateTimeFormat(lang, { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(d.since + 'T00:00:00Z')); } catch (e) {}
+          var title = fill(T.visitsTitle, { since: since, exact: exact });
+          document.getElementById('visitCount').textContent = count;
+          document.getElementById('visitSr').textContent = '. ' + title;
+          vc.title = title;
+          vc.hidden = false;
+        })
+        .catch(function () {});
+
+      // ── Like (/api/likes) ──
+      var btn = document.getElementById('likeBtn');
+      var likes = null, liked = false, busy = false;
+      try { liked = localStorage.getItem(LIKED_KEY) === '1'; } catch (e) {}
+      function renderLike() {
+        if (!btn || likes === null) return;
+        document.getElementById('likeLabel').textContent = liked ? T.liked : T.like;
+        document.getElementById('likeCount').textContent =
+          new Intl.NumberFormat(lang, { notation: 'compact', maximumFractionDigits: 1 }).format(likes);
+        document.getElementById('likeSr').textContent = fill(T.likesCount, { count: likes });
+        btn.title = liked ? T.likedTitle : T.likeTitle;
+        btn.setAttribute('aria-pressed', String(liked));
+        btn.classList.toggle('is-liked', liked);
+        btn.disabled = busy;
+        btn.hidden = false;
+      }
+      fetch('/api/likes', { cache: 'no-store' })
+        .then(function (r) { return isJson(r) ? r.json() : null; })
+        .then(function (d) {
+          if (d && typeof d.likes === 'number' && isFinite(d.likes)) { likes = d.likes; renderLike(); }
+        })
+        .catch(function () {});
+      if (btn) btn.addEventListener('click', function () {
+        if (liked || busy) return;
+        busy = true; liked = true; likes = (likes || 0) + 1;     // optimistic
+        try { localStorage.setItem(LIKED_KEY, '1'); } catch (e) {}
+        renderLike();
+        fetch('/api/likes', { method: 'POST' })
+          .then(function (r) { return r.json(); })
+          .then(function (d) { if (d && typeof d.likes === 'number' && isFinite(d.likes)) likes = d.likes; })
+          .catch(function () {})
+          .then(function () { busy = false; renderLike(); });
+      });
+    })();
+  </script>
 </body>
 </html>

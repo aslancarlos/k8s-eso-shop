@@ -3,35 +3,128 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title><%= title || 'ESO Shop' %> · k8s-eso-shop</title>
+  <title><%= title || 'ESO Shop' %> · ESO Shop · Machine Identity Academy</title>
   <% if (locals.base) { %><base href="<%= base %>/" /><% } %>
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#111828" media="(prefers-color-scheme: dark)" />
+  <!-- Theme init before paint: same key and mechanism as the Academy (useTheme):
+       localStorage('idira-theme'), applied as data-theme + .dark on <html>. -->
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('idira-theme');
+        var theme = saved || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+      } catch (e) {
+        document.documentElement.dataset.theme = 'dark';
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" />
   <link rel="stylesheet" href="style.css" />
 </head>
+<%
+  var p = locals.reqPath || '/';
+  function navState(prefix) {
+    if (p === prefix) return 'aria-current="page"';
+    if (p.indexOf(prefix + '/') === 0) return 'aria-current="true"';
+    return '';
+  }
+  var shellI18n = {
+    visitsTitle: t('shell.visits_title'),
+    likesCount: t('shell.likes_count'),
+    like: t('shell.like'),
+    liked: t('shell.liked'),
+    likeTitle: t('shell.like_title'),
+    likedTitle: t('shell.liked_title')
+  };
+%>
 <body>
-  <nav class="navbar">
-    <div class="nav-inner">
-      <a href="./" class="nav-brand">
-        <span class="brand-icon">🛒</span>
-        <span class="brand-text">ESO<span class="brand-accent">Shop</span></span>
+  <a href="<%= (locals.selfHref || './') %>#main" class="skip-link"><%= t('shell.skip') %></a>
+
+  <!-- Academy top bar (mirrors conjur-explainer AppShell) -->
+  <header class="topbar" id="academyBar" data-lang="<%= locals.lang || 'pt' %>" data-i18n="<%= JSON.stringify(shellI18n) %>">
+    <div class="topbar-inner">
+      <!-- Leaves the app: absolute "/" is intentional (not affected by <base href>) -->
+      <a href="/" class="topbar-brand" translate="no" aria-label="<%= t('shell.home_label') %>">
+        <img src="idira-logo-light.png" alt="" width="248" height="70" class="logo logo--light" />
+        <img src="idira-logo-dark.png" alt="" width="251" height="71" class="logo logo--dark" />
       </a>
-      <div class="nav-links">
-        <a href="products" class="nav-link"><%= t('nav.products') %></a>
-        <a href="orders" class="nav-link"><%= t('nav.orders') %></a>
-        <a href="secrets-info" class="nav-link nav-link--secrets">
-          <span class="secrets-dot"></span><%= t('nav.secrets_info') %>
-        </a>
-        <a href="dashboard" class="nav-link nav-link--dashboard">
-          <span class="dash-dot" id="nav-health-dot"></span><%= t('nav.dashboard') %>
-        </a>
-        <div class="lang-switcher">
-          <% ['pt','en','es'].forEach(function(l) { %>
-            <a href="?lang=<%= l %>"
-               class="lang-btn<%= (locals.lang === l) ? ' lang-btn--active' : '' %>">
-              <%= l.toUpperCase() %>
+      <span class="topbar-divider" aria-hidden="true"></span>
+      <span class="topbar-site" translate="no"><%= t('shell.site_name') %></span>
+
+      <div class="visits" id="visitCounter" hidden>
+        <svg class="visits-ic" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+        <span class="visits-label"><%= t('shell.visits_label') %></span>
+        <span class="visits-count" id="visitCount"></span>
+        <span class="sr-only" id="visitSr"></span>
+      </div>
+
+      <button type="button" class="like" id="likeBtn" aria-pressed="false" hidden>
+        <svg class="like-ic" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg>
+        <span id="likeLabel"><%= t('shell.like') %></span>
+        <span class="like-count" id="likeCount" aria-hidden="true"></span>
+        <span class="sr-only" id="likeSr"></span>
+      </button>
+
+      <div class="topbar-right">
+        <%
+          var flags = {
+            en: '<svg viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" fill="#fff"/><g fill="#b22234"><rect y="0" width="20" height="1.077"/><rect y="2.154" width="20" height="1.077"/><rect y="4.308" width="20" height="1.077"/><rect y="6.462" width="20" height="1.077"/><rect y="8.615" width="20" height="1.077"/><rect y="10.769" width="20" height="1.077"/><rect y="12.923" width="20" height="1.077"/></g><rect width="8.4" height="7.538" fill="#3c3b6e"/></svg>',
+            pt: '<svg viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" fill="#009c3b"/><polygon points="10,1.5 18,7 10,12.5 2,7" fill="#ffdf00"/><circle cx="10" cy="7" r="2.9" fill="#002776"/></svg>',
+            es: '<svg viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" fill="#c60b1e"/><rect y="3.5" width="20" height="7" fill="#ffc400"/></svg>'
+          };
+          var nativeNames = { en: 'English', pt: 'Português', es: 'Español' };
+          var hrefFor = locals.langHref || function (l) { return '?lang=' + l; };
+        %>
+        <div class="lang" role="group" aria-label="<%= t('shell.language') %>">
+          <% ['en','pt','es'].forEach(function(l) { var on = (locals.lang === l); %>
+            <a href="<%= hrefFor(l) %>" class="lang-btn" lang="<%= l %>" hreflang="<%= l %>" translate="no"
+               aria-label="<%= nativeNames[l] %>"<% if (on) { %> aria-current="true"<% } %>>
+              <span class="lang-pill"><span class="lang-flag"><%- flags[l] %></span><%= l.toUpperCase() %></span>
             </a>
           <% }) %>
         </div>
+        <button type="button" class="theme-toggle" id="themeToggle" aria-label="<%= t('shell.theme_dark') %>" title="<%= t('shell.theme_dark') %>" aria-pressed="true">
+          <svg class="ic-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+          <svg class="ic-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ESO Shop secondary navigation -->
+  <nav class="shopnav" aria-label="<%= t('shell.shop_nav') %>">
+    <div class="shopnav-inner">
+      <a href="./" class="shop-brand"<% if (p === '/') { %> aria-current="page"<% } %>>
+        <span class="shop-brand-ic" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+        </span>
+        <span class="shop-brand-text" translate="no">ESO<span class="shop-brand-accent">Shop</span></span>
+      </a>
+      <div class="shopnav-links">
+        <a href="products" class="shopnav-link" <%- navState('/products') %>>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+          <%= t('nav.products') %>
+        </a>
+        <a href="orders" class="shopnav-link" <%- navState('/orders') %>>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>
+          <%= t('nav.orders') %>
+        </a>
+        <a href="secrets-info" class="shopnav-link" <%- navState('/secrets-info') %>>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>
+          <%= t('nav.secrets_info') %>
+        </a>
+        <a href="dashboard" class="shopnav-link" <%- navState('/dashboard') %>>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg>
+          <%= t('nav.dashboard') %>
+          <span class="dash-dot" id="nav-health-dot" aria-hidden="true"></span>
+        </a>
       </div>
     </div>
   </nav>
-  <main class="main-content">
+  <main class="main-content" id="main" tabindex="-1">

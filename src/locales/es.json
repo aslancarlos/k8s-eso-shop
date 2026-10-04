@@ -6,10 +6,10 @@
     "dashboard": "Dashboard"
   },
   "home": {
-    "eyebrow": "PANW|IDIRA Conjur · External Secrets Operator · Kubernetes",
+    "eyebrow": "IDIRA Secrets Manager · External Secrets Operator · Kubernetes",
     "title": "E-commerce",
     "title_accent": "Zero-Trust",
-    "subtitle": "Una demo en vivo donde cada credencial de base de datos se obtiene dinámicamente desde <strong>Conjur Cloud</strong> via <strong>External Secrets Operator</strong> — sin contraseñas en el código, sin .env, sin secretos en la imagen.",
+    "subtitle": "Una demo en vivo donde cada credencial de base de datos se obtiene dinámicamente desde <strong>Secrets Manager</strong> vía <strong>External Secrets Operator</strong>: sin contraseñas en el código, sin .env, sin secretos en la imagen.",
     "cta_browse": "Ver Productos",
     "cta_how": "Cómo funciona →",
     "featured": "Productos Destacados",
@@ -20,12 +20,16 @@
     "diag_synced": "↑ sincronizado por",
     "diag_eso": "ESO Controller",
     "diag_jwt": "↓ autenticación JWT",
-    "diag_conjur": "Conjur Cloud"
+    "diag_conjur": "Secrets Manager"
   },
   "products": {
     "title": "Productos",
     "all": "Todos",
-    "in_stock": "en stock"
+    "in_stock": "en stock",
+    "subtitle": "Catálogo leído de MySQL con credenciales entregadas en tiempo de ejecución por External Secrets Operator.",
+    "results": "{{n}} productos",
+    "filter_label": "Filtrar por categoría",
+    "low_stock": "Pocas unidades"
   },
   "orders": {
     "title": "Pedidos",
@@ -36,7 +40,12 @@
     "col_total": "Total",
     "col_status": "Estado",
     "col_date": "Fecha",
-    "view": "Ver →"
+    "view": "Ver →",
+    "subtitle": "Pedidos guardados en la misma base de datos, leídos con las credenciales entregadas en tiempo de ejecución.",
+    "status_pending": "Pendiente",
+    "status_processing": "En proceso",
+    "status_shipped": "Enviado",
+    "status_delivered": "Entregado"
   },
   "order_detail": {
     "back": "← Pedidos",
@@ -47,22 +56,41 @@
     "col_unit": "Precio Unit.",
     "col_subtotal": "Subtotal",
     "total": "Total",
-    "status": "Estado"
+    "status": "Estado",
+    "title": "Pedido #{{id}}",
+    "error": "Error:",
+    "fallback_title": "Pedido"
   },
   "secrets_info": {
     "title": "Cómo Fluyen los Secrets",
-    "subtitle": "Cero credenciales en el código — entregadas por ESO → Conjur en tiempo de ejecución",
+    "subtitle": "Cero credenciales en el código: entregadas en tiempo de ejecución por External Secrets Operator desde Secrets Manager",
     "chain_title": "Cadena de entrega de secretos",
-    "step1": "<strong>ClusterSecretStore</strong> — ESO se autentica con Conjur Cloud vía <code>authn-jwt/eks-latam</code> usando el JWT de la service account Kubernetes del pod",
-    "step2": "<strong>ExternalSecret</strong> mapea rutas de Conjur a un K8s Secret:",
+    "step1": "<strong>ClusterSecretStore</strong>: External Secrets Operator se autentica con Secrets Manager vía <code>authn-jwt/eks-latam</code> usando el JWT de la service account Kubernetes del pod",
+    "step2": "<strong>ExternalSecret</strong> mapea rutas de Secrets Manager a un K8s Secret:",
     "step3": "<strong>K8s Secret</strong> <code>eso-shop-db-creds</code> es creado/actualizado por ESO",
     "step4": "<strong>Deployment</strong> monta el secret como variables de entorno vía <code>envFrom.secretRef</code>",
-    "step5": "<strong>App</strong> lee <code>DB_HOST</code>, <code>DB_USER</code>, <code>DB_PASS</code> del entorno — sin SDK de Conjur, sin lectura de archivos",
+    "step5": "<strong>App</strong> lee <code>DB_HOST</code>, <code>DB_USER</code>, <code>DB_PASS</code> del entorno: sin SDK de Secrets Manager, sin lectura de archivos",
     "live_status": "Estado de conexión en vivo",
     "connected": "Conectado",
     "error_pill": "Error",
     "db_label": "Base de datos",
-    "db_time": "Hora del BD"
+    "db_time": "Hora del BD",
+    "guided_hint": "Recorre la cadena: usa ◀ ▶, los puntos, o déjalo reproducir",
+    "b_prev": "Paso anterior",
+    "b_next": "Paso siguiente",
+    "b_play": "Reproducir",
+    "b_pause": "Pausar",
+    "node_conjur": "Secrets Manager",
+    "nsub_conjur": "Bóveda de secretos",
+    "node_eso": "ESO",
+    "nsub_eso": "External Secrets Operator",
+    "node_secret": "K8s Secret",
+    "nsub_secret": "eso-shop-db-creds",
+    "node_deploy": "Deployment",
+    "nsub_deploy": "eso-shop",
+    "node_app": "App",
+    "nsub_app": "Node.js",
+    "step_label": "Paso {{n}}"
   },
   "dashboard": {
     "title": "Dashboard en Vivo",
@@ -88,6 +116,24 @@
   "common": {
     "db_error": "Error BD:",
     "footer_creds": "Credenciales vía",
-    "footer_via": "→"
+    "footer_via": "→",
+    "rollout_title": "Pods reiniciados",
+    "rollout_sub": "Nuevas credenciales aplicadas, sin interrupción",
+    "footer_label": "Cómo esta aplicación obtiene sus credenciales"
+  },
+  "shell": {
+    "site_name": "Machine Identity Academy",
+    "home_label": "IDIRA by Palo Alto Networks: inicio de Machine Identity Academy",
+    "shop_nav": "ESO Shop",
+    "skip": "Saltar al contenido principal",
+    "language": "Idioma",
+    "theme_dark": "Tema oscuro",
+    "visits_label": "Accesos",
+    "visits_title": "{{exact}} accesos a demo.minha.cloud desde {{since}}, medidos en el balanceador de carga de AWS y actualizados cada hora. Cuenta visitas, no personas únicas.",
+    "like": "Me gusta",
+    "liked": "Te gusta",
+    "like_title": "¿Te gustó el sitio? Déjanos tu me gusta",
+    "liked_title": "¡Gracias por tu me gusta!",
+    "likes_count": "{{count}} me gusta"
   }
 }

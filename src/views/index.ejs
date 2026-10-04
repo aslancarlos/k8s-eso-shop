@@ -1,50 +1,37 @@
 <%- include('partials/head', { title: t('home.featured') }) %>
 
-<section class="hero">
+<section class="hero-band" aria-labelledby="hero-title">
   <div class="hero-text">
-    <div class="hero-eyebrow"><%= t('home.eyebrow') %></div>
-    <h1 class="hero-title"><%= t('home.title') %> <span class="accent"><%= t('home.title_accent') %></span></h1>
+    <p class="hero-eyebrow"><%= t('home.eyebrow') %></p>
+    <h1 class="hero-title" id="hero-title"><%= t('home.title') %> <span class="idira-shimmer"><%= t('home.title_accent') %></span></h1>
     <p class="hero-subtitle"><%- t('home.subtitle') %></p>
     <div class="hero-actions">
-      <a href="products" class="btn btn--primary"><%= t('home.cta_browse') %></a>
-      <a href="secrets-info" class="btn btn--outline"><%= t('home.cta_how') %></a>
+      <a href="products" class="btn btn-primary"><%= t('home.cta_browse') %></a>
+      <a href="secrets-info" class="btn btn-secondary btn-on-dark"><%= t('home.cta_how') %></a>
     </div>
   </div>
-  <div class="hero-diagram">
-    <div class="diag-node diag-node--app"><%= t('home.diag_app') %></div>
-    <div class="diag-arrow"><%= t('home.diag_reads') %></div>
-    <div class="diag-node diag-node--k8s"><%= t('home.diag_k8s') %></div>
-    <div class="diag-arrow"><%= t('home.diag_synced') %></div>
-    <div class="diag-node diag-node--eso"><%= t('home.diag_eso') %></div>
-    <div class="diag-arrow"><%= t('home.diag_jwt') %></div>
-    <div class="diag-node diag-node--conjur"><%= t('home.diag_conjur') %></div>
-  </div>
+  <ol class="hero-diagram">
+    <li class="diag-node diag-node--k8s"><%= t('home.diag_app') %></li>
+    <li class="diag-arrow" aria-hidden="true"><%= t('home.diag_reads') %></li>
+    <li class="diag-node diag-node--k8s"><%= t('home.diag_k8s') %></li>
+    <li class="diag-arrow" aria-hidden="true"><%= t('home.diag_synced') %></li>
+    <li class="diag-node diag-node--k8s"><%= t('home.diag_eso') %></li>
+    <li class="diag-arrow" aria-hidden="true"><%= t('home.diag_jwt') %></li>
+    <li class="diag-node diag-node--idira"><%= t('home.diag_conjur') %></li>
+  </ol>
 </section>
 
-<section class="section">
+<section class="section" aria-labelledby="featured-title">
   <div class="section-header">
-    <h2 class="section-title"><%= t('home.featured') %></h2>
-    <a href="products" class="section-link"><%= t('home.view_all') %></a>
+    <h2 class="section-title" id="featured-title"><%= t('home.featured') %></h2>
+    <a href="products" class="link"><%= t('home.view_all') %></a>
   </div>
   <% if (error) { %>
-    <div class="alert alert--error"><strong><%= t('common.db_error') %></strong> <%= error %></div>
+    <%- include('partials/alert', { label: t('common.db_error'), message: error }) %>
   <% } %>
   <div class="product-grid">
     <% products.slice(0, 8).forEach(p => { %>
-      <div class="product-card">
-        <div class="product-img-wrap">
-          <img src="<%= p.image_url %>" alt="<%= p.name %>" class="product-img" loading="lazy" />
-          <span class="product-badge"><%= p.category %></span>
-        </div>
-        <div class="product-info">
-          <h3 class="product-name"><%= p.name %></h3>
-          <p class="product-desc"><%= p.description %></p>
-          <div class="product-footer">
-            <span class="product-price">$<%= parseFloat(p.price).toFixed(2) %></span>
-            <span class="product-stock"><%= p.stock %> <%= t('products.in_stock') %></span>
-          </div>
-        </div>
-      </div>
+      <%- include('partials/product-card', { p }) %>
     <% }) %>
   </div>
 </section>

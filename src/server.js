@@ -1,9 +1,42 @@
 const express = require('express')
 const path = require('path')
 const http = require('http')
+const https = require('https')
+const fs = require('fs')
 const cookieParser = require('cookie-parser')
 const { getPool } = require('./db')
 const i18n = require('./i18n')
+
+// ── In-cluster read of our own Deployment (for rollout-restart notifications) ──
+const SA_DIR          = '/var/run/secrets/kubernetes.io/serviceaccount'
+const SELF_NS         = process.env.POD_NAMESPACE || 'eso-shop'
+const SELF_DEPLOYMENT = process.env.SELF_DEPLOYMENT || 'eso-shop'
+const readSA = f => { try { return fs.readFileSync(`${SA_DIR}/${f}`, 'utf8').trim() } catch { return null } }
+
+function getSelfDeployment() {
+  return new Promise((resolve, reject) => {
+    const token = readSA('token')
+    const ca    = readSA('ca.crt')
+    if (!token || !ca) return reject(new Error('not running in-cluster'))
+    const req = https.request({
+      host: process.env.KUBERNETES_SERVICE_HOST || 'kubernetes.default.svc',
+      port: process.env.KUBERNETES_SERVICE_PORT || 443,
+      path: `/apis/apps/v1/namespaces/${SELF_NS}/deployments/${SELF_DEPLOYMENT}`,
+      method: 'GET', ca, timeout: 4000,
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+    }, r => {
+      let data = ''
+      r.on('data', c => (data += c))
+      r.on('end', () => {
+        if (r.statusCode !== 200) return reject(new Error(`k8s ${r.statusCode}`))
+        try { resolve(JSON.parse(data)) } catch (e) { reject(e) }
+      })
+    })
+    req.on('error', reject)
+    req.on('timeout', () => req.destroy(new Error('timeout')))
+    req.end()
+  })
+}
 
 const app = express()
 const PORT         = process.env.PORT || 3000
@@ -16,7 +49,7 @@ app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, 'views'))
 app.locals.base = BASE
 
-// Simple in-memory rate limiter — max requests per window per IP
+// Simple in-memory rate limiter: max requests per window per IP
 function makeRateLimiter(maxReq, windowMs) {
   const counts = new Map()
   setInterval(() => counts.clear(), windowMs).unref()
@@ -46,13 +79,55 @@ router.use((req, res, next) => {
   res.setHeader('Permissions-Policy', 'geolocation=(), camera=(), microphone=()')
   res.setHeader(
     'Content-Security-Policy',
-    "default-src 'self'; img-src 'self' https://images.unsplash.com data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self'"
+    "default-src 'self'; img-src 'self' https://images.unsplash.com data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com"
   )
+  next()
+})
+
+// Current path (relative to BASE) and query for the views: active nav state
+// (aria-current) and language links that keep the visitor on the same page.
+router.use((req, res, next) => {
+  res.locals.reqPath = req.path
+  // This page as a relative href (keeps the query): used by the skip link,
+  // since a bare "#main" would resolve against <base href> and leave the page.
+  const self = req.url.replace(/^\//, '')
+  res.locals.selfHref = !self ? './' : self.startsWith('?') ? './' + self : self
+  res.locals.langHref = lang => {
+    const params = new URLSearchParams()
+    for (const [k, v] of Object.entries(req.query)) {
+      if (k !== 'lang' && typeof v === 'string') params.set(k, v)
+    }
+    params.set('lang', lang)
+    // Relative href (CLAUDE.md: never absolute, the <base href> adds BASE_PATH)
+    const rel = req.path.replace(/^\//, '')
+    return (rel || './') + '?' + params.toString()
+  }
   next()
 })
 
 router.get('/health', (req, res) => {
   res.json({ status: 'ok' })
+})
+
+// Rollout status of our own Deployment: the client polls this and shows a
+// toast whenever `sig` changes (a rollout restart bumps restartedAt / generation).
+router.get('/rollout-status', async (req, res) => {
+  try {
+    const dep = await getSelfDeployment()
+    const ann = (dep.spec && dep.spec.template && dep.spec.template.metadata && dep.spec.template.metadata.annotations) || {}
+    const restartedAt = ann['kubectl.kubernetes.io/restartedAt'] || ann['idira.restartedAt'] || ''
+    const st = dep.status || {}
+    const replicas = st.replicas || 0
+    const ready    = st.readyReplicas || 0
+    const updated  = st.updatedReplicas || 0
+    res.json({
+      sig: `${restartedAt}|${(dep.metadata && dep.metadata.generation) || 0}`,
+      restartedAt, replicas, ready, updated,
+      rolling: updated < replicas || ready < replicas,
+    })
+  } catch (e) {
+    res.json({ sig: null, error: e.message })
+  }
 })
 
 router.get('/', async (req, res) => {
@@ -157,7 +232,7 @@ router.post('/orders', orderLimiter, async (req, res) => {
         'INSERT INTO order_items (order_id, product_id, quantity, unit_price) VALUES (?,?,?,?)',
         [orderId, item.product_id, item.quantity, prod.price]
       )
-      // Atomic: only decrement if stock is sufficient — prevents negative stock
+      // Atomic: only decrement if stock is sufficient (prevents negative stock)
       const [upd] = await pool.execute(
         'UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?',
         [item.quantity, item.product_id, item.quantity]

@@ -1,63 +1,69 @@
-<%- include('partials/head', { title: order ? 'Order #' + order.id : 'Order' }) %>
+<%- include('partials/head', { title: order ? t('order_detail.title', { id: order.id }) : t('order_detail.fallback_title') }) %>
 
-<div class="page-header">
+<header class="page-header">
   <a href="orders" class="back-link"><%= t('order_detail.back') %></a>
   <% if (order) { %>
-    <h1 class="page-title">Order #<%= order.id %></h1>
+    <h1 class="page-title"><%= t('order_detail.title', { id: order.id }) %></h1>
+  <% } else { %>
+    <h1 class="page-title"><%= t('order_detail.fallback_title') %></h1>
   <% } %>
-</div>
+</header>
 
 <% if (error) { %>
-  <div class="alert alert--error"><strong>Error:</strong> <%= error %></div>
+  <%- include('partials/alert', { label: t('order_detail.error'), message: error }) %>
 <% } %>
 
 <% if (order) { %>
   <div class="order-detail-grid">
-    <div class="order-meta card">
-      <h2 class="card-title"><%= t('order_detail.customer') %></h2>
-      <p><strong><%= order.customer_name %></strong></p>
-      <p class="text-muted"><%= order.customer_email %></p>
-      <p class="mt-1"><%= t('order_detail.status') %>: <span class="status-badge status-badge--<%= order.status %>"><%= order.status %></span></p>
-      <p class="text-muted mt-1"><%= new Date(order.created_at).toLocaleString() %></p>
-    </div>
+    <section class="card" aria-labelledby="od-customer">
+      <h2 class="card-title" id="od-customer"><%= t('order_detail.customer') %></h2>
+      <p class="strong"><%= order.customer_name %></p>
+      <p class="muted"><%= order.customer_email %></p>
+      <dl class="meta-list">
+        <div><dt><%= t('order_detail.status') %></dt><dd><%- include('partials/status-chip', { status: order.status }) %></dd></div>
+        <div><dt><%= t('orders.col_date') %></dt><dd class="num"><%= new Date(order.created_at).toLocaleString(lang) %></dd></div>
+      </dl>
+    </section>
 
-    <div class="order-items card">
-      <h2 class="card-title"><%= t('order_detail.items') %></h2>
-      <table class="items-table">
-        <thead>
-          <tr>
-            <th><%= t('order_detail.col_product') %></th>
-            <th><%= t('order_detail.col_qty') %></th>
-            <th><%= t('order_detail.col_unit') %></th>
-            <th><%= t('order_detail.col_subtotal') %></th>
-          </tr>
-        </thead>
-        <tbody>
-          <% items.forEach(item => { %>
+    <section class="card card--table" aria-labelledby="od-items">
+      <h2 class="card-title card-title--pad" id="od-items"><%= t('order_detail.items') %></h2>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
             <tr>
-              <td>
-                <div class="item-name-cell">
-                  <img src="<%= item.image_url %>" class="item-thumb" alt="" />
-                  <div>
-                    <div><%= item.name %></div>
-                    <div class="text-muted text-sm"><%= item.category %></div>
-                  </div>
-                </div>
-              </td>
-              <td class="text-center"><%= item.quantity %></td>
-              <td>$<%= parseFloat(item.unit_price).toFixed(2) %></td>
-              <td>$<%= (item.quantity * item.unit_price).toFixed(2) %></td>
+              <th scope="col"><%= t('order_detail.col_product') %></th>
+              <th scope="col" class="num-col"><%= t('order_detail.col_qty') %></th>
+              <th scope="col" class="num-col"><%= t('order_detail.col_unit') %></th>
+              <th scope="col" class="num-col"><%= t('order_detail.col_subtotal') %></th>
             </tr>
-          <% }) %>
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colspan="3" class="text-right"><strong><%= t('order_detail.total') %></strong></td>
-            <td><strong>$<%= parseFloat(order.total).toFixed(2) %></strong></td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            <% items.forEach(item => { %>
+              <tr>
+                <td>
+                  <div class="item-name-cell">
+                    <img src="<%= item.image_url %>" class="item-thumb" alt="" width="40" height="40" loading="lazy" />
+                    <div>
+                      <div class="strong"><%= item.name %></div>
+                      <div class="muted text-sm"><%= item.category %></div>
+                    </div>
+                  </div>
+                </td>
+                <td class="num-col num"><%= item.quantity %></td>
+                <td class="num-col num">$<%= parseFloat(item.unit_price).toFixed(2) %></td>
+                <td class="num-col num">$<%= (item.quantity * item.unit_price).toFixed(2) %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+          <tfoot>
+            <tr>
+              <th scope="row" colspan="3" class="text-right"><%= t('order_detail.total') %></th>
+              <td class="num-col num strong">$<%= parseFloat(order.total).toFixed(2) %></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </section>
   </div>
 <% } %>
 
