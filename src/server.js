@@ -49,7 +49,7 @@ app.set('view engine', 'ejs')
 app.set('views', path.join(__dirname, 'views'))
 app.locals.base = BASE
 
-// Simple in-memory rate limiter — max requests per window per IP
+// Simple in-memory rate limiter: max requests per window per IP
 function makeRateLimiter(maxReq, windowMs) {
   const counts = new Map()
   setInterval(() => counts.clear(), windowMs).unref()
@@ -79,8 +79,29 @@ router.use((req, res, next) => {
   res.setHeader('Permissions-Policy', 'geolocation=(), camera=(), microphone=()')
   res.setHeader(
     'Content-Security-Policy',
-    "default-src 'self'; img-src 'self' https://images.unsplash.com data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self'"
+    "default-src 'self'; img-src 'self' https://images.unsplash.com data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com"
   )
+  next()
+})
+
+// Current path (relative to BASE) and query for the views: active nav state
+// (aria-current) and language links that keep the visitor on the same page.
+router.use((req, res, next) => {
+  res.locals.reqPath = req.path
+  // This page as a relative href (keeps the query): used by the skip link,
+  // since a bare "#main" would resolve against <base href> and leave the page.
+  const self = req.url.replace(/^\//, '')
+  res.locals.selfHref = !self ? './' : self.startsWith('?') ? './' + self : self
+  res.locals.langHref = lang => {
+    const params = new URLSearchParams()
+    for (const [k, v] of Object.entries(req.query)) {
+      if (k !== 'lang' && typeof v === 'string') params.set(k, v)
+    }
+    params.set('lang', lang)
+    // Relative href (CLAUDE.md: never absolute, the <base href> adds BASE_PATH)
+    const rel = req.path.replace(/^\//, '')
+    return (rel || './') + '?' + params.toString()
+  }
   next()
 })
 
@@ -88,7 +109,7 @@ router.get('/health', (req, res) => {
   res.json({ status: 'ok' })
 })
 
-// Rollout status of our own Deployment — the client polls this and shows a
+// Rollout status of our own Deployment: the client polls this and shows a
 // toast whenever `sig` changes (a rollout restart bumps restartedAt / generation).
 router.get('/rollout-status', async (req, res) => {
   try {
@@ -211,7 +232,7 @@ router.post('/orders', orderLimiter, async (req, res) => {
         'INSERT INTO order_items (order_id, product_id, quantity, unit_price) VALUES (?,?,?,?)',
         [orderId, item.product_id, item.quantity, prod.price]
       )
-      // Atomic: only decrement if stock is sufficient — prevents negative stock
+      // Atomic: only decrement if stock is sufficient (prevents negative stock)
       const [upd] = await pool.execute(
         'UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?',
         [item.quantity, item.product_id, item.quantity]

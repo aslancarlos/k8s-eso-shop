@@ -1,0 +1,8 @@
+<%
+  var known = ['pending', 'processing', 'shipped', 'delivered'];
+  var s = known.indexOf(status) !== -1 ? status : null;
+%>
+<span class="chip chip--status chip--<%= s || 'unknown' %>">
+  <span class="status-shape" aria-hidden="true"></span>
+  <%= s ? t('orders.status_' + s) : status %>
+</span>

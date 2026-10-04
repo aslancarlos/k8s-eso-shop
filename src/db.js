@@ -70,7 +70,7 @@ async function migrate(pool) {
         ('Clean Code Book', 'A Handbook of Agile Software Craftsmanship by Robert C. Martin', 34.99, 20, 'Books', 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400'),
         ('Camping Tent 4-Person', 'Waterproof dome tent, easy setup, 3 seasons', 189.99, 12, 'Outdoors', 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=400'),
         ('Smart Watch Series X', 'GPS, heart rate monitor, 7-day battery life', 399.99, 28, 'Electronics', 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400'),
-        ('The Pragmatic Programmer', 'From Journeyman to Master — 20th Anniversary Edition', 39.99, 17, 'Books', 'https://images.unsplash.com/photo-1589998059171-988d887df646?w=400'),
+        ('The Pragmatic Programmer', 'From Journeyman to Master, 20th Anniversary Edition', 39.99, 17, 'Books', 'https://images.unsplash.com/photo-1589998059171-988d887df646?w=400'),
         ('Dumbbell Set 20kg', 'Adjustable rubber-coated dumbbell set with rack', 159.99, 8, 'Sports', 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400'),
         ('Backpack 40L', 'Waterproof hiking backpack with laptop compartment', 79.99, 36, 'Outdoors', 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400'),
         ('USB-C Hub 7-in-1', 'HDMI 4K, USB 3.0 x3, SD card, 100W PD charging', 59.99, 63, 'Electronics', 'https://images.unsplash.com/photo-1591488320449-011701bb6704?w=400')
@@ -115,6 +115,14 @@ async function migrate(pool) {
     for (const [old, replacement] of brokenImages) {
       await conn.execute('UPDATE products SET image_url = ? WHERE image_url = ?', [replacement, old])
     }
+
+    // Fix mojibake in the seeded description (an em dash stored as "\u00e2\u20ac\u201d"
+    // by an earlier seed). Idempotent: rows already holding the clean text are skipped.
+    const cleanDesc = 'From Journeyman to Master, 20th Anniversary Edition'
+    await conn.execute(
+      "UPDATE products SET description = ? WHERE name = 'The Pragmatic Programmer' AND description LIKE 'From Journeyman to Master%' AND description <> ?",
+      [cleanDesc, cleanDesc]
+    )
 
     console.log('Database migration complete')
   } finally {

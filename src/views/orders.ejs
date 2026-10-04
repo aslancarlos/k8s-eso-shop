@@ -1,45 +1,48 @@
 <%- include('partials/head', { title: t('orders.title') }) %>
 
-<div class="page-header">
+<header class="page-header">
   <h1 class="page-title"><%= t('orders.title') %></h1>
-</div>
+  <p class="page-subtitle"><%= t('orders.subtitle') %></p>
+</header>
 
 <% if (error) { %>
-  <div class="alert alert--error"><strong><%= t('common.db_error') %></strong> <%= error %></div>
+  <%- include('partials/alert', { label: t('common.db_error'), message: error }) %>
 <% } %>
 
 <% if (orders.length === 0 && !error) { %>
-  <div class="empty-state"><%= t('orders.empty') %></div>
-<% } else { %>
-  <div class="orders-table-wrap">
-    <table class="orders-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th><%= t('orders.col_customer') %></th>
-          <th><%= t('orders.col_email') %></th>
-          <th><%= t('orders.col_items') %></th>
-          <th><%= t('orders.col_total') %></th>
-          <th><%= t('orders.col_status') %></th>
-          <th><%= t('orders.col_date') %></th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <% orders.forEach(o => { %>
+  <div class="card empty-state"><%= t('orders.empty') %></div>
+<% } else if (orders.length) { %>
+  <div class="card card--table">
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
           <tr>
-            <td class="order-id">#<%= o.id %></td>
-            <td><%= o.customer_name %></td>
-            <td class="text-muted"><%= o.customer_email %></td>
-            <td class="text-center"><%= o.item_count %></td>
-            <td class="order-total">$<%= parseFloat(o.total).toFixed(2) %></td>
-            <td><span class="status-badge status-badge--<%= o.status %>"><%= o.status %></span></td>
-            <td class="text-muted"><%= new Date(o.created_at).toLocaleDateString() %></td>
-            <td><a href="orders/<%= o.id %>" class="link"><%= t('orders.view') %></a></td>
+            <th scope="col">#</th>
+            <th scope="col"><%= t('orders.col_customer') %></th>
+            <th scope="col"><%= t('orders.col_email') %></th>
+            <th scope="col" class="num-col"><%= t('orders.col_items') %></th>
+            <th scope="col" class="num-col"><%= t('orders.col_total') %></th>
+            <th scope="col"><%= t('orders.col_status') %></th>
+            <th scope="col"><%= t('orders.col_date') %></th>
+            <th scope="col"><span class="sr-only"><%= t('orders.view') %></span></th>
           </tr>
-        <% }) %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% orders.forEach(o => { %>
+            <tr>
+              <td class="mono muted">#<%= o.id %></td>
+              <td class="strong"><%= o.customer_name %></td>
+              <td class="muted"><%= o.customer_email %></td>
+              <td class="num-col num"><%= o.item_count %></td>
+              <td class="num-col num strong">$<%= parseFloat(o.total).toFixed(2) %></td>
+              <td><%- include('partials/status-chip', { status: o.status }) %></td>
+              <td class="muted num"><%= new Date(o.created_at).toLocaleDateString(lang) %></td>
+              <td class="text-right"><a href="orders/<%= o.id %>" class="link"><%= t('orders.view') %></a></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
   </div>
 <% } %>
 

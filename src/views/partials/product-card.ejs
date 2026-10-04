@@ -1,0 +1,14 @@
+<article class="product-card">
+  <div class="product-media">
+    <img src="<%= p.image_url %>" alt="<%= p.name %>" class="product-img" width="400" height="300" loading="lazy" decoding="async" />
+  </div>
+  <div class="product-body">
+    <span class="chip chip--category"><%= p.category %></span>
+    <h3 class="product-name"><%= p.name %></h3>
+    <p class="product-desc" title="<%= p.description %>"><%= p.description %></p>
+    <div class="product-footer">
+      <span class="product-price">$<%= parseFloat(p.price).toFixed(2) %></span>
+      <span class="product-stock"><span class="num"><%= p.stock %></span> <%= t('products.in_stock') %></span>
+    </div>
+  </div>
+</article>
