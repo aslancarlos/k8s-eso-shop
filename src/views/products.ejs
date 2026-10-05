@@ -23,7 +23,8 @@
   <%- include('partials/alert', { label: t('common.db_error'), message: error }) %>
 <% } %>
 
-<div class="product-grid">
+<%# data-health markers are stable hooks for loadtest/ (do not tie tests to CSS classes) %>
+<div class="product-grid" data-health="products-rendered">
   <% products.forEach(p => { %>
     <%- include('partials/product-card', { p }) %>
   <% }) %>
