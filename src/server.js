@@ -281,14 +281,16 @@ router.get('/secrets-info', async (req, res) => {
 function fetchOperatorStatus() {
   return new Promise((resolve, reject) => {
     const url = new URL('/status', OPERATOR_URL)
-    http.get(url.toString(), (res) => {
+    const req = http.get(url.toString(), { timeout: 2000 }, (res) => {
       let d = ''
       res.on('data', c => d += c)
       res.on('end', () => {
         try { resolve(JSON.parse(d)) }
         catch { reject(new Error('Invalid operator response')) }
       })
-    }).on('error', reject)
+    })
+    req.on('timeout', () => req.destroy(new Error('Operator status timeout')))
+    req.on('error', reject)
   })
 }
 
