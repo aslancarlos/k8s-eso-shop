@@ -5,7 +5,7 @@ import logging
 import threading
 import datetime as dt
 from collections import deque
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from kubernetes import client, config, watch
 
 logging.basicConfig(
@@ -19,6 +19,7 @@ NAMESPACE       = os.environ.get('WATCH_NAMESPACE',   'eso-shop')
 SECRET_NAME     = os.environ.get('WATCH_SECRET',      'eso-shop-db-creds')
 DEPLOYMENT_NAME = os.environ.get('TARGET_DEPLOYMENT', 'eso-shop')
 HEALTH_PORT     = int(os.environ.get('HEALTH_PORT',   '8080'))
+STATUS_EVERY    = float(os.environ.get('STATUS_REFRESH_SECONDS', '2'))
 
 # Shared state (protected by _lock)
 _lock        = threading.Lock()
@@ -27,6 +28,7 @@ _last_rv     = None
 _events      = deque(maxlen=20)   # last 20 restart events
 _core_v1     = None
 _apps_v1     = None
+_status      = {'error': 'status not collected yet', 'timestamp': None}  # latest snapshot
 
 
 def _now_iso():
@@ -88,8 +90,31 @@ def _get_status():
         return {'error': str(e), 'timestamp': _now_iso()}
 
 
+def status_loop():
+    """Refresh the /status snapshot in the background.
+
+    /status used to query the K8s API on every request, inside a single-threaded HTTP server.
+    Under load (each GET /k8s-eso/api/dashboard proxies here) the kubelet probes queued behind
+    those calls, timed out after 1 s and the container was restarted. Now the API is read once
+    every STATUS_EVERY seconds, whatever the request rate, and /status only serves the copy.
+    """
+    global _status
+    while True:
+        if _core_v1 is not None:
+            snap = _get_status()
+            with _lock:
+                _status = snap
+        time.sleep(STATUS_EVERY)
+
+
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
+        try:
+            self._route()
+        except (BrokenPipeError, ConnectionResetError):
+            pass  # client gave up (probe timeout, proxy closed): nothing left to answer
+
+    def _route(self):
         if self.path in ('/', '/health'):
             ok = _healthy and _core_v1 is not None
             code, body = (200, b'ok') if ok else (503, b'unhealthy')
@@ -99,7 +124,8 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(body)
 
         elif self.path == '/status':
-            data = _get_status()
+            with _lock:
+                data = _status
             body = json.dumps(data).encode()
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
@@ -116,7 +142,8 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def run_health_server():
-    srv = HTTPServer(('', HEALTH_PORT), Handler)
+    srv = ThreadingHTTPServer(('', HEALTH_PORT), Handler)
+    srv.daemon_threads = True
     srv.serve_forever()
 
 
@@ -203,5 +230,6 @@ def watch_loop():
 if __name__ == '__main__':
     t = threading.Thread(target=run_health_server, daemon=True)
     t.start()
-    log.info('Health/status server on :%d', HEALTH_PORT)
+    threading.Thread(target=status_loop, daemon=True).start()
+    log.info('Health/status server on :%d (status refreshed every %ss)', HEALTH_PORT, STATUS_EVERY)
     watch_loop()

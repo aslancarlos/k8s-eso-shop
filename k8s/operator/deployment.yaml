@@ -20,7 +20,7 @@ spec:
         - name: dockerhub-pull
       containers:
         - name: operator
-          image: aslancarlos/eso-shop-operator:latest
+          image: aslancarlos/eso-shop-operator:1.1.0
           env:
             - name: WATCH_NAMESPACE
               value: "eso-shop"
@@ -38,6 +38,7 @@ spec:
               port: 8080
             initialDelaySeconds: 5
             periodSeconds: 10
+            timeoutSeconds: 3
             failureThreshold: 3
           livenessProbe:
             httpGet:
@@ -45,6 +46,7 @@ spec:
               port: 8080
             initialDelaySeconds: 15
             periodSeconds: 20
+            timeoutSeconds: 3
             failureThreshold: 3
           resources:
             requests:
